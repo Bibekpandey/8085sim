@@ -1,0 +1,186 @@
+MOV r,r
+MOV m,r
+MOV r,m
+
+MVI r,byt
+MVI m,byt
+
+LXI rp,dbl
+
+LDAX rp
+
+LHLD dbl #dbl here refers to address value, address is also word
+
+LDA dbl
+
+STAX rp
+
+SHLD dbl
+
+STA dbl
+
+ADD r
+ADD m
+
+ADC r
+ADC m
+
+SUB r
+SUB m
+
+SBB r
+SBB M
+
+DAD rp
+DAD sp #sp refers to Stack Pointer
+
+INR r
+INR m
+
+INX rp
+INX sp
+
+DCR r
+DCR m
+
+DCX rp
+DCX sp
+
+DAA nop
+
+CMA nop
+
+STC nop
+
+CMC nop
+
+RLC nop
+
+RLC nop
+
+RAL nop
+
+RAR nop
+
+ANA r
+ANA m
+
+XRA r
+XRA m
+
+ORA r
+ORA m
+
+CMP r
+CMP m
+
+ADI byt
+
+ACI byt
+
+SUI byt
+
+SBI byt
+
+ANI byt
+
+XRI byt
+
+ORI byt
+
+CPI byt
+
+JMP dbl
+
+JNZ dbl
+
+JZ dbl
+
+JNC dbl
+
+JC dbl
+
+JPO dbl
+
+JPE dbl
+
+JP dbl
+
+JM dbl
+
+PCHL nop
+
+CALL dbl
+
+CNZ dbl
+
+CZ dbl
+
+CNC dbl
+
+CC dbl
+
+CPO dbl
+
+CPE dbl
+
+CP dbl
+
+CM dbl
+
+RET nop
+
+RNZ nop
+
+RZ nop
+
+RNC nop
+
+RC nop
+
+RPO nop
+
+RPE nop
+
+RP nop
+
+RM nop
+
+RST1 nop
+
+RST2 nop
+
+RST3 nop
+
+RST4 nop
+
+RST5 nop
+
+RST6 nop
+
+RST7 nop
+
+PUSH rp
+
+POP rp
+
+XTHL nop
+
+SPHL nop
+
+OUT byt
+
+IN byt
+
+DI nop
+
+EI nop
+
+NOP nop
+
+HLT nop
+
+RIM nop
+
+SIM nop
+<<< >>>
