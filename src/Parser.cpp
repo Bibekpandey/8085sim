@@ -6,7 +6,6 @@ void Parser::Initialize(std::string rulefile)
 {
 	// load the file		
 	std::ifstream rules_file(rulefile);
-
 	// temporary variables
 	std::string temp, rule, opcode, prev_opcode="..."; 
 	// prev_opcode="..." is set because it would have no value
@@ -42,10 +41,7 @@ void Parser::Initialize(std::string rulefile)
 			cnt=cnt+1;
 			// assign new rule to complete rule
 			complete_rule = rule;
-			if(rule == "nop")
-				numOperands = 0;
-			else
-				numOperands = Helper::Split(rule, ',').size();
+			numOperands = Helper::Split(rule, ',').size();
 
 			m_numOperands.push_back(numOperands);// store number of operands
 		}
@@ -59,22 +55,27 @@ void Parser::ParseLine(std::string line)
 {
 	// first trim spaces of the line
 	Helper::LTrim(line);
+	if(line.length()==0) return;
 	Helper::RTrim(line);
+	if(line.length()==0) return;
 	// now line has left trimmed string;
-	
+
 	// split the instruction into opcode and operands, which are separated by a space
 	std::vector<std::string> instruction;
 	instruction = Helper::SplitIntoTwo(line, ' ');
 	// now instruction has opcode and operands
+	// check if there is no operand, if not store ##
+	if(instruction.size()==1)
+		instruction.push_back(std::string("##"));
 
 	// check if opcode is correct, first convert to upper case
 	Helper::ToUpper(instruction[0]);
 	Helper::ToUpper(instruction[1]);
+
 	// if opcode is valid, check for valid operands
 	int opIndex = ValidateOpcode(instruction[0]);
 	if(opIndex >=0 and opIndex < m_opcodes.size() )
 	{
-		std::cout << "opcode validated\n";
 		// validate operands
 		ValidateOperands(opIndex, instruction[1]);
 	}
@@ -102,7 +103,6 @@ void Parser::ValidateOperands(int opIndex, std::string operandString)
 		std::cout << "internal error";
 		exit(2);
 	}
-
 	std::vector<std::string> operands, ruleVec;
 	operands = Helper::Split(operandString, ',');
 	ruleVec = Helper::Split(m_rules[opIndex], '|');// because, in rules, multiple rules are separated by |
@@ -114,7 +114,7 @@ void Parser::ValidateOperands(int opIndex, std::string operandString)
 	if(operands.size() != m_numOperands[opIndex])
 	{
 		std::cout << "invalid operands number";
-		//exit(2);
+		exit(2);
 	}
 	else // operands number match.
 	{
@@ -183,6 +183,7 @@ bool Parser::IsType(std::string operand, std::string type)
 
 		else if(type=="byt")
 		{
+			if(operand.length()==1 and !Helper::IsDigit(operand[0])) return false;
 			bool dec=true;
 			unsigned i;
 			for(i=0;i<operand.length()-1;i++) // remaining last is checked for 'H'
@@ -196,17 +197,18 @@ bool Parser::IsType(std::string operand, std::string type)
 			// else if last is digit
 			if(operand[i]=='H' and (operand.length()>3 or operand.length()<2))
 				return false; // coz one byte cant have 3 or more nibbles
+			else if(operand[i]=='H' and operand.length()<=3 and operand.length()>=2)
+				return true;
 			else
-			{
 				if(dec==false) // H is not specified but hex digit is entered
 					return false;
 				else // if no hex digit(A-F) is entered check value <=255
 					return (atoi(operand.c_str()) < 256);
-			}
-		}
+		}	
 
 		else if(type=="dbl")
 		{
+			if(operand.length()==1 and !Helper::IsDigit(operand[0])) return false;
 			bool dec=true;
 			unsigned i;
 			for(i=0;i<operand.length()-1;i++) // remaining last is checked for 'H'
@@ -216,20 +218,20 @@ bool Parser::IsType(std::string operand, std::string type)
 				if(!Helper::IsHex(operand[i]))
 					return false;
 			}
-			// if last is 'H', then length of string should be <= 5 and >=2
+			// if last is 'H', then length of string should be <= 3 and >=2
 			// else if last is digit
 			if(operand[i]=='H' and (operand.length()>5 or operand.length()<2))
 				return false; // coz one byte cant have 3 or more nibbles
+			else if(operand[i]=='H' and operand.length()<=5 and operand.length()>=2)
+				return true;
 			else
-			{
 				if(dec==false) // H is not specified but hex digit is entered
 					return false;
-				else // if no hex digit(A-F) is entered check value <=65535
+				else // if no hex digit(A-F) is entered check value <=255
 					return (atoi(operand.c_str()) < 65536);
-			}
 		}
 		else if(type=="nop")
-			return operand.length()==0;
+			return operand=="##";
 
 		else return false;
 }

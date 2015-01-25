@@ -2,4 +2,5 @@ bin/
 obj/
 *.o
 *.d
-
+*.swp
+*.swo
