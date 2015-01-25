@@ -59,14 +59,17 @@ void Parser::ParseLine(std::string line)
 	Helper::RTrim(line);
 	if(line.length()==0) return;
 	// now line has left trimmed string;
+	// check if it is comment
+	if(line[0]==';')
+		return;
 
+	// split into two with delimiter ';' and process the first element
+	std::vector<std::string> temp = Helper::SplitIntoTwo(line, ';');
 	// split the instruction into opcode and operands, which are separated by a space
 	std::vector<std::string> instruction;
-	instruction = Helper::SplitIntoTwo(line, ' ');
+	instruction = Helper::SplitIntoTwo(temp[0], ' ');
 	// now instruction has opcode and operands
 	// check if there is no operand, if not store ##
-	if(instruction.size()==1)
-		instruction.push_back(std::string("##"));
 
 	// check if opcode is correct, first convert to upper case
 	Helper::ToUpper(instruction[0]);

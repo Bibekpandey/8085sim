@@ -5,7 +5,7 @@
 
 int main()
 {
-	std::string s = "jnz bbbbh";
+	std::string s = "mov a;, ;b ;;this is comment";
 
 	/*std::vector<std::string> splitted;
 	splitted = Helper::Split(s, ',');
