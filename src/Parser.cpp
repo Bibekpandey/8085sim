@@ -68,6 +68,9 @@ void Parser::ParseLine(std::string line)
 	// split the instruction into opcode and operands, which are separated by a space
 	std::vector<std::string> instruction;
 	instruction = Helper::SplitIntoTwo(temp[0], ' ');
+	// if instruction has only one element add ## 
+	if (instruction.size()==1)
+		instruction.push_back(std::string("##"));
 	// now instruction has opcode and operands
 	// check if there is no operand, if not store ##
 
@@ -86,7 +89,7 @@ void Parser::ParseLine(std::string line)
 	{
 		//throw ParseError("invalid opcode");
 		std::cout << "invalid opcode";
-		//exit(2);
+		exit(2);
 	}
 }
 
@@ -116,7 +119,7 @@ void Parser::ValidateOperands(int opIndex, std::string operandString)
 	// FIRST check number of operands match or not
 	if(operands.size() != m_numOperands[opIndex])
 	{
-		std::cout << "invalid operands number";
+		std::cout << "invalid number of operands\n";
 		exit(2);
 	}
 	else // operands number match.
