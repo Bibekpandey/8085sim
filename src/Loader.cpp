@@ -16,5 +16,5 @@ int main()
 	*/
 	Parser p;
 	p.Initialize("rules.txt");
-	p.ParseLine(s);
+	p.ParseFile(std::string("program.txt"));
 }

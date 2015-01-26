@@ -34,7 +34,7 @@ void Parser::Initialize(std::string rulefile)
 			// so store previous opcode in opcode vector
 			// and previous rules in rules vector
 			m_opcodes.push_back(opcode);
-			if(cnt>0)
+			if(cnt>0) // because, for the first time there would be nothing in the rule
 			{
 				m_rules.push_back(complete_rule);
 			}
@@ -51,45 +51,59 @@ void Parser::Initialize(std::string rulefile)
 	m_rules.push_back(complete_rule);
 }
 
-void Parser::ParseLine(std::string line)
+bool Parser::ParseLine(std::string line)
 {
 	// first trim spaces of the line
 	Helper::LTrim(line);
-	if(line.length()==0) return;
+	if(line.length()==0) return true;
 	Helper::RTrim(line);
-	if(line.length()==0) return;
+	if(line.length()==0) return true;
 	// now line has left trimmed string;
 	// check if it is comment
 	if(line[0]==';')
-		return;
+		return true;
 
 	// split into two with delimiter ';' and process the first element
 	std::vector<std::string> temp = Helper::SplitIntoTwo(line, ';');
+	// again check for labels
+	std::vector<std::string> labelled = Helper::SplitIntoTwo(temp[0], ':');
+	std::string instruction;
+	std::string label="";
+	// the first element has label, if exists
+	if(labelled.size()==2) // means there is label
+	{
+		label = labelled[0];
+		instruction = labelled[1];
+		Helper::LTrim(instruction);
+	}
+	else // there is no label,ie. labelled has size 1
+		instruction = labelled[0];
+
 	// split the instruction into opcode and operands, which are separated by a space
-	std::vector<std::string> instruction;
-	instruction = Helper::SplitIntoTwo(temp[0], ' ');
-	// if instruction has only one element add ## 
-	if (instruction.size()==1)
-		instruction.push_back(std::string("##"));
-	// now instruction has opcode and operands
+	std::vector<std::string> opcodeOperands;
+	opcodeOperands = Helper::SplitIntoTwo(instruction, ' ');
+	// if opcodeOperands has only one element add ## 
+	if (opcodeOperands.size()==1)
+		opcodeOperands.push_back(std::string("##"));
+	// now opcodeOperands has opcode and operands
 	// check if there is no operand, if not store ##
 
 	// check if opcode is correct, first convert to upper case
-	Helper::ToUpper(instruction[0]);
-	Helper::ToUpper(instruction[1]);
+	Helper::ToUpper(opcodeOperands[0]);
+	Helper::ToUpper(opcodeOperands[1]);
 
 	// if opcode is valid, check for valid operands
-	int opIndex = ValidateOpcode(instruction[0]);
+	int opIndex = ValidateOpcode(opcodeOperands[0]);
 	if(opIndex >=0 and opIndex < m_opcodes.size() )
 	{
 		// validate operands
-		ValidateOperands(opIndex, instruction[1]);
+		return ValidateOperands(opIndex, opcodeOperands[1]);
 	}
 	else
 	{
 		//throw ParseError("invalid opcode");
-		std::cout << "invalid opcode";
-		exit(2);
+		std::cout << "invalid opcode ";
+		return false;
 	}
 }
 
@@ -101,12 +115,12 @@ int Parser::ValidateOpcode(std::string opcode)
 	return -1;
 }
 				
-void Parser::ValidateOperands(int opIndex, std::string operandString)
+bool Parser::ValidateOperands(int opIndex, std::string operandString)
 {
 	if(opIndex<0 and opIndex>=m_opcodes.size())
 	{
 		//throw ParserError("internal error");
-		std::cout << "internal error";
+		std::cout << "internal error ";
 		exit(2);
 	}
 	std::vector<std::string> operands, ruleVec;
@@ -119,8 +133,8 @@ void Parser::ValidateOperands(int opIndex, std::string operandString)
 	// FIRST check number of operands match or not
 	if(operands.size() != m_numOperands[opIndex])
 	{
-		std::cout << "invalid number of operands\n";
-		exit(2);
+		std::cout << "invalid number of operands ";
+		return false;
 	}
 	else // operands number match.
 	{
@@ -131,12 +145,12 @@ void Parser::ValidateOperands(int opIndex, std::string operandString)
 
 		if (cnt==0)
 		{
-			std::cout << "invalid operands";
-			exit(2);
+			std::cout << "invalid operands ";
+			return false;
 		}
 		else // cnt > 0, should be 1
 		{
-			std::cout << "Hurray!!!";
+			return true;
 		}
 	}
 }
@@ -208,6 +222,7 @@ bool Parser::IsType(std::string operand, std::string type)
 			else
 				if(dec==false) // H is not specified but hex digit is entered
 					return false;
+			    else if(!Helper::IsHex(operand[i])) return false;
 				else // if no hex digit(A-F) is entered check value <=255
 					return (atoi(operand.c_str()) < 256);
 		}	
@@ -225,7 +240,6 @@ bool Parser::IsType(std::string operand, std::string type)
 					return false;
 			}
 			// if last is 'H', then length of string should be <= 3 and >=2
-			// else if last is digit
 			if(operand[i]=='H' and (operand.length()>5 or operand.length()<2))
 				return false; // coz one byte cant have 3 or more nibbles
 			else if(operand[i]=='H' and operand.length()<=5 and operand.length()>=2)
@@ -233,16 +247,35 @@ bool Parser::IsType(std::string operand, std::string type)
 			else
 				if(dec==false) // H is not specified but hex digit is entered
 					return false;
+				else if(!Helper::IsHex(operand[i])) return false;
 				else // if no hex digit(A-F) is entered check value <=255
 					return (atoi(operand.c_str()) < 65536);
 		}
 		else if(type=="nop")
 			return operand=="##";
 
+		else if(type=="lbl")
+			return operand.length()!=0;
+
 		else return false;
 }
 
 void Parser::ParseFile(std::string filename)
 {
+	std::ifstream input(filename);
+	std::string line;
+	int cnt=1;
+	bool error = false;
+	while(getline(input, line))
+	{
+		if(!ParseLine(line))
+		{
+			std::cout << "on line " << cnt << std::endl;
+			error= true;
+		}
+		cnt++;
+	}
+	if(!error)
+		std::cout << "all is well!!\n";
 }
 	

@@ -11,7 +11,7 @@ class Parser
 			void Initialize(std::string rulefile);
 
 			// parse a line
-			void ParseLine(std::string line);
+			bool ParseLine(std::string line);
 			
 			// parse whole file containing the assembly code
 			void ParseFile(std::string filename);
@@ -20,7 +20,7 @@ class Parser
 			int ValidateOpcode(std::string opcode);
 
 			// validate the operands by comparing with the rules
-			void ValidateOperands(int opIndex, std::string operands);
+			bool ValidateOperands(int opIndex, std::string operands);
 
 			// check if the input operands match the type in rule
 			bool CheckRule(std::string inpOperands, std::string ruleOperands);
