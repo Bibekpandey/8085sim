@@ -1,41 +1,6 @@
-;question 10
-
-lxi h, a430h; starting address of first table
-mvi c, 0ah;
-main: mov a, m
-mov d, a
-call inc10; increase the address by 10h
-rrc 
-nop
-jnc false
-rrc 
-jc false
-mov m, d
-false: mov m, b
-call sub10
+mvi a, 22
 dcr c
-jnz main
-rst5
+;jnz 2222
 
-
-; increase hl by 10h
-inc10: push psw
-mov a, l
-adi 10h
-mov l,a
-mov a, h
-aci 00h
-mov h,a
-pop psw
-ret
-
-;decrease hl by 10h
-sub10: push psw
-mov a, l
-sui 10h
-mov l,a
-mov a, h
-sbi 00h
-mov h,a
-pop psw
-ret
+2222: inx b
+;rst5

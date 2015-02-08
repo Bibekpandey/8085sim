@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cmath>
 
 namespace Helper
 {
@@ -95,9 +96,42 @@ namespace Helper
 		return splitted;
 	}
 
-	inline void ToUpper(std::string& s)
+	inline std::string ToUpper(std::string s)
 	{
 		for(unsigned i=0;i<s.length();i++)
 			s[i] = (s[i] >= 'a' and s[i] <= 'z') ? 'A' + s[i] - 'a' : s[i];
+		return s;
+	}
+
+	inline int ToDec(std::string hex)
+	{
+		// trim zeros of left
+		LTrim(hex, '0');
+		int sum = 0, power=0;
+		for(int i=hex.length()-1;i>=0;i--)
+		{
+			if(!IsHex(hex[i]))
+				throw 2; // value error
+			if(!IsDigit(hex[i]))
+				sum+=((hex[i]-'a'+1)*pow(16,power));
+			else
+				sum+=((hex[i]-'0')*pow(16,power));
+			power++;
+		}
+		return sum;
+	}
+
+	inline bool IsHexStr(std::string str)
+	{
+		for(int i=0;i<str.length();i++)
+			if(!IsHex(str[i])) return false;
+		return true;
+	}
+
+	inline bool IsDecStr(std::string str)
+	{
+		for(int i=0;i<str.length();i++)
+			if(!IsDigit(str[i])) return false;
+		return true;
 	}
 }

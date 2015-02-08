@@ -11,7 +11,7 @@ void Parser::Initialize(std::string rulefile)
 	// prev_opcode="..." is set because it would have no value
 	// as we have not read any opcode yet
 
-	std::string complete_rule="aa"; // in case opcode has multiple rules
+	std::string complete_rule=""; // in case opcode has multiple rules
 	unsigned numOperands;
 	int cnt=0;
 
@@ -58,13 +58,14 @@ bool Parser::ParseLine(std::string line)
 	if(line.length()==0) return true;
 	Helper::RTrim(line);
 	if(line.length()==0) return true;
-	// now line has left trimmed string;
+	// now line has left and right trimmed string;
 	// check if it is comment
 	if(line[0]==';')
 		return true;
 
 	// split into two with delimiter ';' and process the first element
 	std::vector<std::string> temp = Helper::SplitIntoTwo(line, ';');
+
 	// again check for labels
 	std::vector<std::string> labelled = Helper::SplitIntoTwo(temp[0], ':');
 	std::string instruction;
@@ -82,15 +83,17 @@ bool Parser::ParseLine(std::string line)
 	// split the instruction into opcode and operands, which are separated by a space
 	std::vector<std::string> opcodeOperands;
 	opcodeOperands = Helper::SplitIntoTwo(instruction, ' ');
+
 	// if opcodeOperands has only one element add ## 
 	if (opcodeOperands.size()==1)
 		opcodeOperands.push_back(std::string("##"));
+
 	// now opcodeOperands has opcode and operands
 	// check if there is no operand, if not store ##
 
 	// check if opcode is correct, first convert to upper case
-	Helper::ToUpper(opcodeOperands[0]);
-	Helper::ToUpper(opcodeOperands[1]);
+	opcodeOperands[0] = Helper::ToUpper(opcodeOperands[0]);
+	opcodeOperands[1] = Helper::ToUpper(opcodeOperands[1]);
 
 	// if opcode is valid, check for valid operands
 	int opIndex = ValidateOpcode(opcodeOperands[0]);
@@ -138,24 +141,17 @@ bool Parser::ValidateOperands(int opIndex, std::string operandString)
 	}
 	else // operands number match.
 	{
-		unsigned cnt = 0;
 		// check if rules match with operands type
 		for(unsigned i=0;i<ruleVec.size();i++)
-			cnt+=CheckRule(operandString, ruleVec[i]);// returns true or false
-
-		if (cnt==0)
-		{
-			std::cout << "invalid operands ";
-			return false;
-		}
-		else // cnt > 0, should be 1
-		{
-			return true;
-		}
+			if(CheckRule(operandString, ruleVec[i], opIndex)) // returns true or false
+				return true;
+		// no rules for operands match, return false
+		std::cout << "invalid operands ";
+		return false;
 	}
 }
 
-bool Parser::CheckRule(std::string inputOps, std::string ruleOps)
+bool Parser::CheckRule(std::string inputOps, std::string ruleOps, int opIndex)
 {
 	std::vector<std::string> input = Helper::Split(inputOps, ',');
 	std::vector<std::string> rule = Helper::Split(ruleOps, ',');
@@ -164,105 +160,91 @@ bool Parser::CheckRule(std::string inputOps, std::string ruleOps)
 		std::cout << "internal error";
 		exit(2);
 	}
-	for(int i=0;i<rule.size();i++)
-	{
-		// first trim input
-		Helper::LTrim(input[i]);
-		Helper::RTrim(input[i]);
-		if(!IsType(input[i], rule[i]))
+	// get the arguments, if argument type is NONE return false
+		Argument a1, a2;
+		if(rule.size()==1)
+		{
+			Helper::LTrim(input[0]);
+			Helper::RTrim(input[0]);
+			a1 = GetArgument(input[0],rule[0]);
+		}
+		else if(rule.size()==2)
+		{
+			Helper::LTrim(input[0]);Helper::LTrim(input[1]);
+			Helper::RTrim(input[0]);Helper::RTrim(input[1]);
+			a1 = GetArgument(input[0], rule[0]);
+			a2 = GetArgument(input[1], rule[1]);
+		}
+		else
 			return false;
-	}
-	return true;
+
+		// check type
+		if(a1.type==NONE and a2.type==NONE)
+			return false;
+		else  // create instruction object
+		{
+			m_instructions.push_back(Instruction(m_opcodes[opIndex], a1, a2));
+			return true;
+		}
 }
 
-bool Parser::IsType(std::string operand, std::string type)
+Argument Parser::GetArgument(std::string operand, std::string type)
 {
 		if(type=="r")	
+		{
 			if(operand=="A" || operand=="B" || operand=="C" || operand=="D" || operand=="E" || operand=="H" || operand=="L")
-				return true;
-			else
-				return false;
-
+				return Argument(REGISTER, operand);
+		}
 		else if(type=="m")
+		{
 			if(operand=="M")
-				return true;
-			else
-				return false;
-
-		else if(type=="rp")
+				return Argument(MEMORY, operand);
+		}
+		else if(type=="rp") 
+		{
 			if(operand=="B" || operand=="D" || operand=="H" || operand=="PSW")
-				return true;
-			else
-				return false;
-
+				return Argument(REG_PAIR, operand);
+		}
 		else if(type=="sp")
+		{
 			if(operand=="SP")
-				return true;
-			else
-				return false;
-
+				return Argument(STACK_POINTER, operand);
+		}
 		else if(type=="byt")
 		{
-			if(operand.length()==1 and !Helper::IsDigit(operand[0])) return false;
-			bool dec=true;
-			unsigned i;
-			for(i=0;i<operand.length()-1;i++) // remaining last is checked for 'H'
-			{
-				if(!Helper::IsDigit(operand[i]))
-					dec = false;
-				if(!Helper::IsHex(operand[i]))
-					return false;
-			}
-			// if last is 'H', then length of string should be <= 3 and >=2
-			// else if last is digit
-			if(operand[i]=='H' and (operand.length()>3 or operand.length()<2))
-				return false; // coz one byte cant have 3 or more nibbles
-			else if(operand[i]=='H' and operand.length()<=3 and operand.length()>=2)
-				return true;
-			else
-				if(dec==false) // H is not specified but hex digit is entered
-					return false;
-			    else if(!Helper::IsHex(operand[i])) return false;
-				else // if no hex digit(A-F) is entered check value <=255
-					return (atoi(operand.c_str()) < 256);
-		}	
-
+			if(Helper::IsHexStr(operand) and operand.length()==2)
+				return Argument(BYTE, operand);
+		}
 		else if(type=="dbl")
 		{
-			if(operand.length()==1 and !Helper::IsDigit(operand[0])) return false;
-			bool dec=true;
-			unsigned i;
-			for(i=0;i<operand.length()-1;i++) // remaining last is checked for 'H'
-			{
-				if(!Helper::IsDigit(operand[i]))
-					dec = false;
-				if(!Helper::IsHex(operand[i]))
-					return false;
-			}
-			// if last is 'H', then length of string should be <= 3 and >=2
-			if(operand[i]=='H' and (operand.length()>5 or operand.length()<2))
-				return false; // coz one byte cant have 3 or more nibbles
-			else if(operand[i]=='H' and operand.length()<=5 and operand.length()>=2)
-				return true;
-			else
-				if(dec==false) // H is not specified but hex digit is entered
-					return false;
-				else if(!Helper::IsHex(operand[i])) return false;
-				else // if no hex digit(A-F) is entered check value <=255
-					return (atoi(operand.c_str()) < 65536);
+			if(Helper::IsHexStr(operand) and operand.length()==4)
+				return Argument(DOUBLE, operand);
 		}
 		else if(type=="nop")
-			return operand=="##";
-
+		{
+			if(operand=="##")
+				return Argument(EMPTY, std::string(""));
+		}
 		else if(type=="lbl")
-			return operand.length()!=0;
+		{
+			if (LabelExists(operand))
+				return Argument(LABEL, operand);
+		}
 
-		else return false;
+		return Argument(NONE, std::string(""));
 }
 
 void Parser::ParseFile(std::string filename)
 {
 	std::ifstream input(filename);
+
+	// first make list of the labels
+	GetLabels(input);
+
+	// come back to the beginning of stream to parse further
+	input.clear();
+	input.seekg(0, std::ios::beg);
+
 	std::string line;
 	int cnt=1;
 	bool error = false;
@@ -277,5 +259,40 @@ void Parser::ParseFile(std::string filename)
 	}
 	if(!error)
 		std::cout << "all is well!!\n";
+
+	input.close();
+	
+	std::cout << "THE INSTRUCTIONS:\n";
+	for(int i=0;i<m_instructions.size();i++)
+		std::cout<<m_instructions[i].command << " > "<< m_instructions[i].arg1.value << ", "<<m_instructions[i].arg2.value<< std::endl;
 }
 	
+void Parser::GetLabels(std::ifstream& input)
+{
+	std::string line;
+	std::vector<std::string> splitted;
+	
+	while(getline(input, line))
+	{
+		Helper::LTrim(line);
+		Helper::RTrim(line);
+		if(line.length()==0) // means no thing in the line
+			continue;
+		// split the line and assign it into splitted vector
+		splitted = Helper::SplitIntoTwo(line, ':');
+		if(splitted.size() <=1) // means no label in the line
+			continue;
+		else // splitted.size()==2, there is a label
+			m_labels.push_back(splitted[0]);
+	}
+}
+
+bool Parser::LabelExists(std::string label)
+{
+	for(int i=0;i<m_labels.size();i++)
+	{
+		if(Helper::ToUpper(m_labels[i])==label)
+			return true;
+	}
+	return false;
+}
