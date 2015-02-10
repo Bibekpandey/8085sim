@@ -105,15 +105,17 @@ namespace Helper
 
 	inline int ToDec(std::string hex)
 	{
+		hex = ToUpper(hex);
 		// trim zeros of left
 		LTrim(hex, '0');
+
 		int sum = 0, power=0;
 		for(int i=hex.length()-1;i>=0;i--)
 		{
 			if(!IsHex(hex[i]))
 				throw 2; // value error
 			if(!IsDigit(hex[i]))
-				sum+=((hex[i]-'a'+1)*pow(16,power));
+				sum+=((hex[i]-'A'+10)*pow(16,power));
 			else
 				sum+=((hex[i]-'0')*pow(16,power));
 			power++;

@@ -1,6 +1,5 @@
-mvi a, 22
-dcr c
-;jnz 2222
-
-2222: inx b
-;rst5
+pandey:mov a,b
+bibek:mvi a, 22
+lxi h, 3322
+jc bibek 
+jmp pandey 
