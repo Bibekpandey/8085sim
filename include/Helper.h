@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
+#include <sstream>
 
 namespace Helper
 {
@@ -135,5 +136,28 @@ namespace Helper
 		for(int i=0;i<str.length();i++)
 			if(!IsDigit(str[i])) return false;
 		return true;
+	}
+
+	inline std::string ToHexStr(int i)
+	{
+		// j payo tei vayo yo. kaam garcha
+		std::string s;
+		std::stringstream ss, ssss;
+
+		int cnt =0;
+
+		while(i!=0)
+		{
+			int rem = i%16;
+			ss << char(rem<10?'0'+rem : 'A' + rem-10);
+			cnt+=1;
+			i = i/16;
+		}
+		ss >> s;
+		for(int i=s.length()-1;i>=0;i--)
+			ssss << s[i];
+		s="";
+		ssss >> s;
+		return s;
 	}
 }

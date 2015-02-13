@@ -90,6 +90,8 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 	std::string temp;
 
 	int address = m_startAddress;
+	int count = 1;
+	int error =0;
 
 	while(getline(program_file, temp))
 	{
@@ -143,10 +145,13 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 			
 			if(args.size()==1)
 				args.push_back("NOP");
-			else if (args.size()==2)
+			else if (args.size()==2) // means, we have two arguments already, nothing to be done
 			{} // do nothing
 			else
 			{
+				error+=1;
+				std::cout << "invalid number of arguments in line " << count<<std::endl;
+
 				std::cout << "more than 2 arguments or less than 0 found";
 				throw 1; // error, split into 2 should not give other results
 			}
@@ -160,7 +165,7 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		// now that we have command and arguments, get opcode and values 
 		try
 		{
-				std::vector<int> opcodeAndValues = GetOpcodeAndValues(commndAndArg[0], args);
+			std::vector<int> opcodeAndValues = GetOpcodeAndValues(commndAndArg[0], args);
 	
 			for(int i=0;i<opcodeAndValues.size();i++)
 			{
@@ -179,36 +184,63 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		{
 			std::cout << s << " on line "<< address-m_startAddress<<std::endl;
 		}
-		catch(int)
+		catch(Error err)
 		{
-			std::cout << "error on line " << address-m_startAddress<<std::endl;
+			switch(err)
+			{
+				case INVALID_COMMAND:
+					std::cout << "Invalid command: ";
+					break;
+				case INVALID_OPERANDS:
+					std::cout << "Invalid operands/operands number: ";
+					break;
+				default:
+					std::cout << "oops!! internal error\n";
+					break;
+			}
+			std::cout << "on line " << count << std::endl;
+			error+=1;
 		}
+		count++;
 	}
-	for(int i=0;i<m_labels.size();i++);
-//		std::cout << m_labels[i] << " " << m_labelAddresses[i]<< std::endl;
 
 	// assign addresses to the unassigned addresses(due to labels)
-	AssignValues(mem);
-	for(int i=m_startAddress;i<address;i++)
-		std::cout << i<<" "<< mem[i] << std::endl;;
+	try
+	{
+		AssignValues(mem);
+	}
+	catch(std::string s)
+	{
+		std::cout << "Label doesnot exist: "<< s << std::endl;
+		error+=1;
+	}
+	catch(int)
+	{
+		std::cout << "internal error";
+		error+=1;
+	}
+
+	if(error==0)
+	{
+		for(int i=m_startAddress;i<address;i++)
+			std::cout << Helper::ToHexStr(i)<<" "<< Helper::ToHexStr(mem[i]) << std::endl;;
+	}
 }
 
 void NewParser::AssignValues(Memory& mem)
 {
 	for(int i=0;i<m_unfilledAddresses.size();i++)
 	{
-		std::cout << m_unfilledAddLabel[i] << "^^";
 		int index = GetLabelIndex(m_unfilledAddLabel[i]);
-		std::cout << index << "!!";
 		if(index<0 or index >= m_labels.size())
 		{
-			std::cout << " index out of bounds \n";
-			throw 1;
+			std::string s(m_unfilledAddLabel[i]);
+			throw s;
 		}
-		// first enter LSB of the address
-		mem.SetValue(m_unfilledAddresses[i], m_labelAddresses[index]%100);
-		// then enter MSB of the address
-		mem.SetValue(m_unfilledAddresses[i]+1, m_labelAddresses[index]/100);
+		// first store LOWER byte of the address
+		mem.SetValue(m_unfilledAddresses[i], m_labelAddresses[index]%256);
+		// then sotre higher byte of the address
+		mem.SetValue(m_unfilledAddresses[i]+1, m_labelAddresses[index]/256);
 	}
 }
 
@@ -225,16 +257,14 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 	std::vector<int> opcodeAndArgs;
 	if(!CommandExists(cmmd)) // command doesnot exist,throw exception 
 	{
-		std::cout << "command doesnot exist\n";
-		throw 'a';
+		throw INVALID_COMMAND;
 	}
 	else // command exists	
 	{
 		int n = GetInstructionIndex(cmmd); // the index of the first instruction whose command matches cmmd
 		if(n<0 or n>=m_instructions.size())
 		{
-			std::cout << "invalid command\n";
-			throw "invalid command";
+			throw INVALID_COMMAND;
 		}
 
 		// check all the instructions whose command is cmmd
@@ -242,8 +272,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 		{
 			if(m_instructions[n].command!=cmmd or n>=m_instructions.size()) // command != cmmd, and not yet any match to instruction, throw exception
 			{
-				std::cout << "invalid operands/operand number";
-				throw "invalid operands/operand number";
+				throw INVALID_OPERANDS;
 			}
 			else  // command == cmmd
 			{

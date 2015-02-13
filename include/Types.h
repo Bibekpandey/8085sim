@@ -57,7 +57,7 @@ inline Argument GetArgument(std::string a, std::string command)
 	else if (a=="SP")
 		return Argument(STACK_POINTER, a);
 	else if (a=="NOP")
-		return Argument(EMPTY);
+		return Argument(EMPTY, "NOP");
 	else
 		return Argument(NONE);
 }

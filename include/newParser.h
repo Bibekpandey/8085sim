@@ -4,6 +4,8 @@
 #include <fstream>
 #include <Types.h>
 
+enum Error{ INVALID_COMMAND, INVALID_OPERANDS, INVALID_OPERAND_NUM, LABEL_NOT_EXIST };
+
 class ParseError
 {
 	ParseError(std::string s, int line)
