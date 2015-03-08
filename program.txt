@@ -1,8 +1,5 @@
 mvi a, 22 
-mov a, b
-bibek: lxi h, 2211
-jmp bibek
-dcr c
-jnz pandey
-inx d
-pandey:rst5
+mov b, a
+mvi e, 11
+mov d,e
+rst5

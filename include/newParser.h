@@ -13,6 +13,8 @@ class ParseError
 		std::cout << "parse Error: " << s << " on line "<<line<< std::endl;
 	}
 };
+
+
 class NewParser
 {
 	public:
@@ -49,13 +51,14 @@ class NewParser
 		int GetLabelIndex(std::string label);
 
 
-	protected:
 		std::vector<int> m_opcodes;
 		std::vector<Instruction> m_instructions;
+		int m_startAddress;
+
+	protected:
 		std::vector<std::string> m_commands; // commands like MOV, MVI, NOP, DCR, etc.
 		std::vector<std::string> m_labels;
 		std::vector<int>m_labelIndices;
-		int m_startAddress;
 		std::vector<int> m_labelAddresses; // storing addresses of labels
 		std::vector<int> m_unfilledAddresses; // storing unfilled address, i.e later replacing the labels with the addresses
 		std::vector<std::string> m_unfilledAddLabel; // storing the label name whose address is to be filled in unfilledAddress

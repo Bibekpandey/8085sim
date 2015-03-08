@@ -1,17 +1,14 @@
 #include <iostream>
 #include <vector>
-#include <Parser.h>
 #include <newParser.h>
-#include <Helper.h>
-#include <Memory.h>
+#include <Processor.h>
 
 int main()
 {
-	Memory m;
+    Processor processor;
 	NewParser p(8000); // 12345 is starting address
 	p.Initialize("opcodes.txt");
-	p.LoadMnemonics("program.txt", m);
-	//Parser p;
-	//p.Initialize("rules.txt");
-	//p.ParseFile(std::string("program.txt"));
+	p.LoadMnemonics("program.txt", processor.m_memory);
+    processor.Initialize(&p);
+    processor.Run();
 }

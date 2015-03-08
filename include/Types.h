@@ -26,7 +26,7 @@ struct Instruction
 		Argument arg1, arg2;
 		std::string command;
 
-		Instruction(std::string commnd, Argument a1, Argument a2):
+		Instruction(std::string commnd="", Argument a1=Argument(), Argument a2=Argument()):
 			command(commnd),arg1(a1), arg2(a2)
 		{}
 };

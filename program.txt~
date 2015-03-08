@@ -1,4 +1,0 @@
-
-bibek: mov a, b
-jmp bibek
-rst 5
