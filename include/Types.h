@@ -47,6 +47,8 @@ inline Argument GetArgument(std::string a, std::string command)
 		return Argument(DOUBLE);
 	else if (a=="LBL")
 		return Argument(LABEL, a);
+    else if ((a=="B" or a=="D" or a=="H" or a=="SP") and (command=="LXI")) // other than LXI accepting reg_pairs to be added
+        return Argument(REG_PAIR, a);
 	else if (a == "A" or a=="B" or a=="C" or a=="D" or a=="E" or a=="H" or a=="L")
 		return Argument(REGISTER, a);
 	else if(a=="M")
