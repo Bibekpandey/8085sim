@@ -37,10 +37,17 @@ void Processor::Initialize(NewParser*p)
     // map commands and functions
     Command["MVI"] = &Processor::mvi;
     Command["MOV"] = &Processor::mov;
+    Command["LXI"] = &Processor::lxi;
+    Command["JMP"] = &Processor::jmp;
+    Command["CALL"] = &Processor::call;
+    Command["RET"] = &Processor::ret;
+    Command["PUSH"] = &Processor::push;
+    Command["POP"] = &Processor::pop;
+    Command["ADD"] = &Processor::add;
+
     /*
     Command["ACI"] = &Processor::aci;
     Command["ADC"] = &Processor::adc;
-    Command["ADD"] = &Processor::add;
     Command["ADI"] = &Processor::adi;
     Command["ANA"] = &Processor::ana;
     Command["ANI"] = &Processor::ani;
@@ -74,10 +81,6 @@ void Processor::Initialize(NewParser*p)
     Command["CMP"] = &Processor::cmp;
     Command["CMP"] = &Processor::cmp;
     */
-    Command["LXI"] = &Processor::lxi;
-    Command["JMP"] = &Processor::jmp;
-    Command["CALL"] = &Processor::call;
-    Command["RET"] = &Processor::ret;
 }
 
 void Processor::PrintMemory(int a, int b)
@@ -108,10 +111,12 @@ void Processor::Run()
                  std::cin >> a[0] >> a[1];
                  PrintMemory(a[0], a[1]);
              }
+             PrintFlags();
          }
      }
      else
-         while(Execute());
+         while(Execute())
+             PrintFlags();
 }
 
 
@@ -163,4 +168,57 @@ bool Processor::Execute()
     (this->*it->second)(i.arg1, i.arg2);
     //pc+=pc_incr;
     return true;
+}
+
+void Processor::Stackpush(int pushvalue)
+{
+    int spointer = sp[0] + sp[1]*256;
+    m_memory.SetValue(spointer-1, pushvalue%256);
+    m_memory.SetValue(spointer, pushvalue/256);
+    spointer-=2;
+    sp[0] = spointer%256;
+    sp[1] = spointer/256;
+}
+
+int Processor::Stackpop()
+{
+    int spointer = sp[0] + sp[1]*256; // stack pointer's memory
+    int valueAtmem = m_memory[spointer+2] * 256 + m_memory[spointer+1];
+    spointer+=2;
+    sp[0] = spointer%256;
+    sp[1] = spointer/256;
+    return valueAtmem;
+}
+
+void Processor::PrintFlags()
+{
+    std::cout << "S: " << ((psw[1]&1<<SIGN)>>SIGN) <<
+               "    Z: " << ((psw[1]&1<<ZERO)>>ZERO) <<
+                "    AC: " << ((psw[1]&1<<AUX_CARRY)>>AUX_CARRY) <<
+                "    P: " << ((psw[1]&1<<PARITY)>>PARITY) <<
+                "    C: " << ((psw[1]&1<<CARRY)>>CARRY) << std::endl;
+}
+
+void Processor::SetFlags(int& reg)
+{
+        // auxillary flag is already checked
+        // check for carry 
+        if(reg&0x100) // means if 9th bit is 1, set carry flag on
+            psw[1] |= 1<<CARRY;
+
+        // now remove extra bits in the front
+        reg = reg&0xff;
+        
+        // check for zero 
+        if(reg == 0)
+            psw[1] |= 1<<ZERO;
+
+        // check for sign bit
+        if(reg&0x80)
+            psw[1] |= 1<<SIGN;
+
+        //check for parity
+        if((reg&1<<0 + reg&1<<1 + reg&1<<2 + reg&1<<3 + reg&1<<4 + 
+            reg&1<<5 + reg&1<<6 + reg&1<<7) % 2 == 0)
+            psw[1] |= 1<<PARITY;
 }

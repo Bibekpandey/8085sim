@@ -13,6 +13,7 @@ class Processor
 {
 public:
     typedef void(Processor::*f)(Argument, Argument);
+    enum { SIGN=7, ZERO=5, AUX_CARRY=3, PARITY=1, CARRY=0}; // the bits of flag register
 
     Processor();
     ~Processor(){}
@@ -22,16 +23,23 @@ public:
     void Initialize(NewParser*);
     bool Execute(); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
 
+    void Stackpush(int a); // helper to push to stack
+    int Stackpop(); // helper to pop from stack
+
+    void SetFlags(int &reg); // set flags a/c register input
+
+    void PrintFlags();
+
     void PrintRegisters()
     {
-        std::cout << "A "<<psw[0] <<" \nB " << bc[0]<<
-        " \nC " << bc[1]<<
-        " \nD " << de[0]<<
-        " \nE " << de[1]<<
-        " \nH " << hl[0]<<
-        " \nL " << hl[1]<<
-        " \nSP lsb " << sp[0]<<
-        " \nSP msb " << sp[1]<<std::endl<< std::endl;;
+        std::cout << "A: "<<psw[0] <<"    B: " << bc[0]<<
+        "    C: " << bc[1]<<
+        "    D: " << de[0]<<
+        "    E: " << de[1]<<
+        "    H: " << hl[0]<<
+        "    L: " << hl[1]<<
+        "    SP lsb: " << sp[0]<<
+        "    SP msb: " << sp[1]<< "    PC: "<<pc<<std::endl<<std::endl;
     }
 
     // memory
@@ -53,18 +61,35 @@ private:
 
     // our functions, for all the commands
 
+    // MOV ******************
     void mov(Argument a, Argument b) // both a and b must be registers
     {
         pc+=pc_incr;
-        *(R[a.value]) = *(R[b.value]);
+
+        int memlocation = hl[0]*256 + hl[1]; // in case M is used
+
+        if(a.type == MEMORY and b.type==REGISTER)
+            m_memory.SetValue(memlocation, *(R[b.value]));
+        else if(a.type==REGISTER and b.type==MEMORY)
+            *(R[a.value]) = m_memory[memlocation];
+        else if (a.type==REGISTER and b.type==REGISTER)
+            *(R[a.value]) = *(R[b.value]);
     }
 
+    // MVI *******************
     void mvi(Argument a, Argument b) // a is register and b is value
     {
         pc+=pc_incr;
-        *(R[a.value]) = Helper::ToDec(b.value);
+
+        int memlocation = hl[0]*256 + hl[1]; // in case M is used
+
+        if(a.type==REGISTER)
+            *(R[a.value]) = Helper::ToDec(b.value);
+        else if(a.type==MEMORY) 
+            m_memory.SetValue(memlocation, Helper::ToDec(b.value)); 
     }
 
+    // LXI *******************
     void lxi(Argument a, Argument b)
     {
         pc+=pc_incr;
@@ -78,6 +103,7 @@ private:
         RP[a.value][1] = doublevalue%256;
     }
 
+    // JMP ********************
     void jmp(Argument a, Argument b)
     {
         // b must be NOP type
@@ -90,6 +116,7 @@ private:
         pc = memlocation;
     }
 
+    // CALL ********************
     void call(Argument a, Argument b)
     {
         // b must be NOP type
@@ -101,29 +128,63 @@ private:
         // return address is 3 bytes after the current memory location
         int retlocation = pc+3;
 
-        // stack pointer points to address in memory
-        int spointer = sp[0] + sp[1]*256; // memory pointed by sp
-
         pc_incr = 0;
 
         pc = memlocation;
-        m_memory.SetValue(spointer-1, retlocation%256);
-        m_memory.SetValue(spointer, retlocation/256);
-        spointer-=2;
-        sp[0] = spointer%256;
-        sp[1] = spointer/256;
+
+        Stackpush(retlocation); // push the return location to stack
+
     }
 
+    // RET ********************
     void ret(Argument a, Argument b)
     {
-        int spointer = sp[0] + sp[1]*256; // stack pointer's memory
+        pc = Stackpop();
+    }
 
-        int mem = m_memory[spointer+2] * 256 + m_memory[spointer+1];
+    // PUSH *******************
+    void push(Argument a, Argument b)
+    {
+        pc+= pc_incr;
+        // a is reg_pair and b is NOP
+        int push_value = *(RP[a.value]+1) + *(RP[a.value]+0)*256;
+        Stackpush(push_value);
+    }
 
-        spointer+=2;
-        sp[0] = spointer%256;
-        sp[1] = spointer/256;
+    // POP **********************
+    void pop(Argument a, Argument b)
+    {
+        pc+= pc_incr;
+        // a is reg_pair and b is NOP
+        int pop_value = Stackpop();
+        *(RP[a.value] + 0) = pop_value/256;
+        *(RP[a.value] + 1) = pop_value%256;
+    }
 
-        pc = mem;
+    // ADD ********************
+    void add(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int addvalue = 0; // value to be added to A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            addvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            addvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform addition
+        psw[0]+= addvalue;
+
+        // check for auxillary carry, using the old value
+        if((addvalue%16 + oldvalue%16) > 15)
+            psw[1] |= 1<<AUX_CARRY;
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
     }
 };
