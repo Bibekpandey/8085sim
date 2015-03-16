@@ -114,7 +114,7 @@ namespace Helper
 		for(int i=hex.length()-1;i>=0;i--)
 		{
 			if(!IsHex(hex[i]))
-				throw 2; // value error
+				throw "value error in toDec()"; // value error
 			if(!IsDigit(hex[i]))
 				sum+=((hex[i]-'A'+10)*pow(16,power));
 			else
@@ -158,6 +158,8 @@ namespace Helper
 			ssss << s[i];
 		s="";
 		ssss >> s;
+        if(s.length()==1)
+            s= "0"+s;
 		return s;
 	}
 }

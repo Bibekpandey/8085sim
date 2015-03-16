@@ -10,7 +10,7 @@ struct Argument
 		if(t==MEMORY or t==REGISTER or t==STACK_POINTER or t==NONE or t==EMPTY or t==REG_PAIR) size=0; 
 		else if(t==BYTE) size=1;
 		else if(t==DOUBLE or t==LABEL) size=2;
-		else throw 1; // throw exception, exception class remains to be written
+		else throw "type risky"; // throw exception, exception class remains to be written
 	}
 
 	void SetValue(std::string str) { value = str; }

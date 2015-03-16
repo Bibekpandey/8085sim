@@ -1,5 +1,12 @@
-mvi a, 22 
-mov b, a
-mvi e, 11
-mov d,e
-rst5
+ mvi a, 03
+ jmp l1
+ mov b, a
+ l1:lxi h, a101
+ call function
+ rst5
+
+
+ function: mvi c, 0a
+ mov a, c
+ mov b,a
+ ret

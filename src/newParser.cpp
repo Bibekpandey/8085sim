@@ -125,7 +125,8 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		else if (labelAndIns.size()==1)
 			instruction = labelAndIns[0];
 		else
-			throw 1;
+			throw "error in separating label and instruction";
+
 		// process instruction
 
 		// now split instruction by a space to command and arguments
@@ -158,8 +159,7 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		}
 		else 
 		{
-			std::cout << "unexpected\n";
-			throw 1;
+			throw "unexpected error";
 		}
 
 		// now that we have command and arguments, get opcode and values 
@@ -176,8 +176,11 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 					address+=2;
 					break;
 				}
-				mem.SetValue(address, opcodeAndValues[i]);
-				address+=1;
+                else 
+                {
+			    	mem.SetValue(address, opcodeAndValues[i]);
+			    	address+=1;
+                }
 			}
 		}
 		catch(char* s)
