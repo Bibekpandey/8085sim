@@ -43,7 +43,30 @@ void Processor::Initialize(NewParser*p)
     Command["RET"] = &Processor::ret;
     Command["PUSH"] = &Processor::push;
     Command["POP"] = &Processor::pop;
+    Command["LDA"] = &Processor::lda;
+    Command["LDAX"] = &Processor::ldax;
+    Command["LHLD"] = &Processor::lhld;
+    Command["STA"] = &Processor::sta;
+    Command["STAX"] = &Processor::stax;
+    Command["SHLD"] = &Processor::shld;
+    Command["XCHG"] = &Processor::xchg;
+    Command["SPHL"] = &Processor::sphl;
+    Command["PCHL"] = &Processor::pchl;
+    Command["XTHL"] = &Processor::xthl;
+    Command["OUT"] = &Processor::out; // function not written
+    Command["IN"] = &Processor::in; // function not written
     Command["ADD"] = &Processor::add;
+    Command["ADC"] = &Processor::adc;
+    Command["ADI"] = &Processor::adi;
+    Command["ACI"] = &Processor::aci;
+    Command["DAD"] = &Processor::dad;
+    Command["SUB"] = &Processor::sub;
+    Command["SBB"] = &Processor::sbb;
+    Command["SUI"] = &Processor::sui;
+    Command["INR"] = &Processor::inr;
+    Command["INX"] = &Processor::inx;
+    Command["DCR"] = &Processor::dcr;
+    Command["DCX"] = &Processor::dcx;
 
     /*
     Command["ACI"] = &Processor::aci;
@@ -143,9 +166,10 @@ bool Processor::Execute()
     {
         int msbyte = m_memory[pc+2];
         int lsbyte = m_memory[pc+1];
-        i.arg1.value = Helper::ToHexStr(msbyte) + Helper::ToHexStr(lsbyte);
+        i.arg1.value = Helper::ToHexStr(msbyte*256+lsbyte);
         pc_incr+=2;
     }
+
     if (i.arg2.type==BYTE) // get one from mem
     {
         int byte = m_memory[pc+1];
@@ -157,7 +181,7 @@ bool Processor::Execute()
     {
         int msbyte = m_memory[pc+2];
         int lsbyte = m_memory[pc+1];
-        i.arg2.value = Helper::ToHexStr(msbyte) + Helper::ToHexStr(lsbyte);
+        i.arg2.value = Helper::ToHexStr(msbyte*256+lsbyte);
         pc_incr+=2;
     }
     // now call the required function
@@ -166,7 +190,6 @@ bool Processor::Execute()
 
     std::cout << "calling function : " << i.command << std::endl;
     (this->*it->second)(i.arg1, i.arg2);
-    //pc+=pc_incr;
     return true;
 }
 
@@ -205,6 +228,8 @@ void Processor::SetFlags(int& reg)
         // check for carry 
         if(reg&0x100) // means if 9th bit is 1, set carry flag on
             psw[1] |= 1<<CARRY;
+        else
+            psw[1] &= (~(1<<CARRY)&0xff);
 
         // now remove extra bits in the front
         reg = reg&0xff;
@@ -212,13 +237,19 @@ void Processor::SetFlags(int& reg)
         // check for zero 
         if(reg == 0)
             psw[1] |= 1<<ZERO;
+        else
+            psw[1] &= (~(1<<ZERO)&0xff);
 
         // check for sign bit
         if(reg&0x80)
             psw[1] |= 1<<SIGN;
+        else
+            psw[1] &= (~(1<<SIGN)&0xff);
 
         //check for parity
         if((reg&1<<0 + reg&1<<1 + reg&1<<2 + reg&1<<3 + reg&1<<4 + 
             reg&1<<5 + reg&1<<6 + reg&1<<7) % 2 == 0)
             psw[1] |= 1<<PARITY;
+        else
+            psw[1] &= (~(1<<PARITY)&0xff);
 }

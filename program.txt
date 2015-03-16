@@ -1,4 +1,3 @@
-mvi a, ff
-mvi b, 01
-add b
+mvi a, 10
+aci 20 
 rst5

@@ -162,4 +162,11 @@ namespace Helper
             s= "0"+s;
 		return s;
 	}
+
+    inline void swap(int& a, int& b)
+    {
+        int t = a;
+        a =b;
+        b = t;
+    }
 }

@@ -144,7 +144,7 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 			// split by ,
 			args = Helper::SplitIntoTwo(commndAndArg[1], ',');
 			
-			if(args.size()==1)
+			if(args.size()==1) 
 				args.push_back("NOP");
 			else if (args.size()==2) // means, we have two arguments already, nothing to be done
 			{} // do nothing
@@ -288,7 +288,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 						if((Helper::IsHexStr(args[0]) and args[0].length()==2))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
-							opcodeAndArgs.push_back(Helper::ToDec(args[1]));
+							opcodeAndArgs.push_back(Helper::ToDec(args[0]));
 						}
 						else
 							errors+=1;
@@ -318,6 +318,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 				switch(m_instructions[n].arg2.type)
 				{
 					case BYTE:
+                        std::cout <<"byte2\n";
 						if((Helper::IsHexStr(args[1]) and args[1].length()==2))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -345,7 +346,9 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 						if(args[1]!=m_instructions[n].arg2.value)
 							errors+=1;
 						else
-							opcodeAndArgs.push_back(m_opcodes[n]);
+                            // if arg1 is not dbl or byte, push
+                            if(m_instructions[n].arg1.type!=DOUBLE and m_instructions[n].arg1.type!=BYTE)
+							    opcodeAndArgs.push_back(m_opcodes[n]);
 						break;
 				}
 

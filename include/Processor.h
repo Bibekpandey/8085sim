@@ -99,6 +99,7 @@ private:
             throw std::string("argument 2 for lxi is not double");
 
         int doublevalue = Helper::ToDec(b.value);
+        std::cout << "vlaue: "<< b.value<< std::endl;
         RP[a.value][0] = doublevalue/256;
         RP[a.value][1] = doublevalue%256;
     }
@@ -181,10 +182,355 @@ private:
         // check for auxillary carry, using the old value
         if((addvalue%16 + oldvalue%16) > 15)
             psw[1] |= 1<<AUX_CARRY;
+        else
+            psw[1] &= (~(1<<AUX_CARRY)&0xff)
 
         // set other flags
         SetFlags(psw[0]); // set flags may not come in use
         // because different instructions affect different flags
         // but setFlags affects all flags
     }
+
+    // LDA *********************
+    void lda(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is double, b is NOP
+        int address = Helper::ToDec(a.value);
+        psw[0] = m_memory[address];
+    }
+
+    // LDAX *******************
+    void ldax(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is reg_pair, b is NOP
+        if(a.type!=REG_PAIR)
+            throw "not a register pair in ldax";
+
+        int address = *(RP[a.value]+0) * 256 + *(RP[a.value]+1);
+        psw[0] = m_memory[address];
+    }
+
+    // LHLD ***********************
+    void lhld(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is double, b is NOP
+        int address = Helper::ToDec(a.value);
+        hl[0] = m_memory[address+1]; // H contains data of next address
+        hl[1] = m_memory[address];
+    }
+
+    // STA **********************
+    void sta(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is double, b is nop
+        int address = Helper::ToDec(a.value);
+        m_memory.SetValue(address, psw[0]);
+    }
+
+    // STAX *******************
+    void stax(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is reg_pair, b is NOP
+        int address = *(RP[a.value]+0) * 256 + *(RP[a.value]+1);
+        m_memory.SetValue(address, psw[0]);
+    }
+
+    // SHLD ******************
+    void shld(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is double, b is NOP
+        int address = Helper::ToDec(a.value);
+        m_memory.SetValue(address+1, hl[0]);
+        m_memory.SetValue(address, hl[1]);
+    }
+
+    // XCHG *******************
+    void xchg(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+
+        Helper::swap(hl[0], de[0]);
+        Helper::swap(hl[1], de[1]);
+    }
+
+    // SPHL *******************
+    void sphl(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        sp[0] = hl[1]; // content of l
+        sp[1] = hl[0]; // content of h
+    }
+
+    // PCHL ******************
+    void pchl(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        pc = hl[0]*256 + hl[1];
+    }
+
+    // XTHL ******************
+    void xthl(Argument a, Argument b)
+    {
+        int address = sp[1]*256 + sp[0];
+
+        int t = m_memory[address];
+        m_memory.SetValue(address, hl[1]);
+        hl[1] = t;
+
+        t = m_memory[address+1];
+        m_memory.SetValue(address+1, hl[0]);
+        hl[0] = t;
+    }
+
+    // OUT *******************
+    void out(Argument a, Argument b)
+    {
+    }
+
+    // IN **********************
+    void in(Argument a, Argument b)
+    {
+    }
+    
+    // ADC ********************
+    void adc(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int addvalue = 0; // value to be added to A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            addvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            addvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        int carry = psw[1]&1<<CARRY;// carry value
+        
+        // now perform addition
+        psw[0]+= addvalue+carry;
+
+        // check for auxillary carry, using the old value
+        if((addvalue%16 + oldvalue%16+carry) > 15)
+            psw[1] |= 1<<AUX_CARRY;
+        else
+            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+    
+    // ADI ********************
+    void adi(Argument a, Argument b)
+    {
+        // a is Byte, b is NOP
+        pc+=pc_incr;
+        int addvalue = Helper::ToDec(a.value); // value to be added to A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            addvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            addvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform addition
+        psw[0]+= addvalue;
+
+        // check for auxillary carry, using the old value
+        if((addvalue%16 + oldvalue%16) > 15)
+            psw[1] |= 1<<AUX_CARRY;
+        else
+            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+    
+    // ACI ********************
+    void aci(Argument a, Argument b)
+    {
+        // a is Byte, b is NOP
+        pc+=pc_incr;
+        int addvalue = Helper::ToDec(a.value); // value to be added to A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            addvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            addvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        int carry = psw[1]&1<<CARRY;
+        
+        // now perform addition
+        psw[0]+= addvalue+carry;
+
+        // check for auxillary carry, using the old value
+        if((addvalue%16 + oldvalue%16+carry) > 15)
+            psw[1] |= 1<<AUX_CARRY;
+        else
+            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+
+    // DAD ***********************
+    void dad(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is reg_pair, b is NOP
+        int hlcontent = hl[0]*256 + hl[1];
+        int reg_paircontent = RP[a.value][0] * 256 + RP[a.value][1];
+        int sum = hlcontent + reg_paircontent;
+        // set carry if needed
+        if(sum&0x100) // checking 9th bit
+            psw[1] |= 1<<CARRY;
+        else
+            psw[1] &= (~(1<<CARRY)&0xff)
+        sum = sum&0xff;
+
+        hl[0] = sum/256;
+        hl[1] = sum%256;
+    }
+    
+    // SUB ********************
+    void sub(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int subtractvalue = 0; // value to be subtracted from A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            subtractvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            subtractvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform subtraction 
+        psw[0]-= subtractvalue;
+
+        // check for auxillary carry, perhaps not needed for sub
+        
+        //if((addvalue%16 + oldvalue%16) > 15)
+         //   psw[1] |= 1<<AUX_CARRY;
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);// i may be wrong, i think aux is always reset
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+    
+    // SBB ********************
+    void sbb(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int subtractvalue = 0; // value to be subtracted from A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            subtractvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            subtractvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform subtraction 
+        psw[0]-= (subtractvalue+psw[1] & 1<<CARRY);
+
+        // check for auxillary carry, perhaps not needed for sub
+        
+        //if((addvalue%16 + oldvalue%16) > 15)
+         //   psw[1] |= 1<<AUX_CARRY;
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);// i may be wrong, i think aux is always reset
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+    
+    // SUI ********************
+    void sui(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int subtractvalue = Helper::ToDec(a.value); // value to be subtracted from A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            subtractvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            subtractvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform subtraction 
+        psw[0]-= subtractvalue;
+
+        // check for auxillary carry, perhaps not needed for sub
+        
+        //if((addvalue%16 + oldvalue%16) > 15)
+         //   psw[1] |= 1<<AUX_CARRY;
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);// i may be wrong, i think aux is always reset
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+    
+    // SBI ********************
+    void sbi(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        int subtractvalue = Helper::ToDec(a.value); // value to be subtracted from A, reg or mem
+        // a is register/memory, b is NOP
+
+        if(a.type==MEMORY)
+            subtractvalue = m_memory[hl[0]*256 * hl[1]];
+        else if (a.type==REGISTER)
+            subtractvalue = *(R[a.value]);
+
+        int oldvalue = psw[0]; // for aux carry check
+        
+        // now perform subtraction 
+        psw[0]-= (subtractvalue + psw[1]&1<<CARRY);
+
+        // check for auxillary carry, perhaps not needed for sub
+        
+        //if((addvalue%16 + oldvalue%16) > 15)
+         //   psw[1] |= 1<<AUX_CARRY;
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);// i may be wrong, i think aux is always reset
+
+        // set other flags
+        SetFlags(psw[0]); // set flags may not come in use
+        // because different instructions affect different flags
+        // but setFlags affects all flags
+    }
+
+
+    // INR *********************
+    void inr(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is register/memory
+        if(a.type==MEMORY)
+        {
+           int addr 
 };

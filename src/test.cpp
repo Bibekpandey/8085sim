@@ -18,4 +18,8 @@ int main()
     {
         std::cout << a << std::endl;
     }
+    catch(const char* s)
+    {
+        std::cout << s;
+    }
 }
