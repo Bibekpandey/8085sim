@@ -35,14 +35,11 @@ void Processor::Initialize(NewParser*p)
     R["L"] = &(hl[1]);
 
     // map commands and functions
+
+    // data transfer instructions
     Command["MVI"] = &Processor::mvi;
     Command["MOV"] = &Processor::mov;
     Command["LXI"] = &Processor::lxi;
-    Command["JMP"] = &Processor::jmp;
-    Command["CALL"] = &Processor::call;
-    Command["RET"] = &Processor::ret;
-    Command["PUSH"] = &Processor::push;
-    Command["POP"] = &Processor::pop;
     Command["LDA"] = &Processor::lda;
     Command["LDAX"] = &Processor::ldax;
     Command["LHLD"] = &Processor::lhld;
@@ -53,8 +50,11 @@ void Processor::Initialize(NewParser*p)
     Command["SPHL"] = &Processor::sphl;
     Command["PCHL"] = &Processor::pchl;
     Command["XTHL"] = &Processor::xthl;
+    Command["PUSH"] = &Processor::push;
+    Command["POP"] = &Processor::pop;
     Command["OUT"] = &Processor::out; // function not written
     Command["IN"] = &Processor::in; // function not written
+    // arithmetic instructions
     Command["ADD"] = &Processor::add;
     Command["ADC"] = &Processor::adc;
     Command["ADI"] = &Processor::adi;
@@ -67,43 +67,35 @@ void Processor::Initialize(NewParser*p)
     Command["INX"] = &Processor::inx;
     Command["DCR"] = &Processor::dcr;
     Command["DCX"] = &Processor::dcx;
-
-    /*
-    Command["ACI"] = &Processor::aci;
-    Command["ADC"] = &Processor::adc;
-    Command["ADI"] = &Processor::adi;
+    // logical instructions
+    Command["CMP"] = &Processor::cmp;
+    Command["CPI"] = &Processor::cpi;
     Command["ANA"] = &Processor::ana;
     Command["ANI"] = &Processor::ani;
-    Command["CALL"] = &Processor::call;
-    Command["CC"] = &Processor::cc;
-    Command["CM"] = &Processor::cm;
+    Command["XRA"] = &Processor::xra;
+    Command["ORA"] = &Processor::ora;
+    Command["XRI"] = &Processor::xri;
+    Command["ORI"] = &Processor::ori;
+    Command["RLC"] = &Processor::rlc;
+    Command["RRC"] = &Processor::rrc;
+    Command["RAL"] = &Processor::ral;
+    Command["RAR"] = &Processor::rar;
     Command["CMA"] = &Processor::cma;
     Command["CMC"] = &Processor::cmc;
-    Command["CMP"] = &Processor::cmp;
-    Command["CNC"] = &Processor::cnc;
-    Command["CNZ"] = &Processor::cnz;
-    Command["CP"] = &Processor::cp;
-    Command["CPE"] = &Processor::cpe;
-    Command["CPI"] = &Processor::cpi;
-    Command["CPO"] = &Processor::cpo;
+    Command["STC"] = &Processor::stc;
+    // branching instructions
+    Command["JMP"] = &Processor::jmp;
+    Command["JZ"] = &Processor::jz;
+    Command["JNZ"] = &Processor::jnz;
+    Command["JC"] = &Processor::jc;
+    Command["JNC"] = &Processor::jnc; // jp, jm, jpe, jpo remain
+    Command["CALL"] = &Processor::call;
+    Command["RET"] = &Processor::ret;
     Command["CZ"] = &Processor::cz;
-    Command["DAA"] = &Processor::daa;
-    Command["DAD"] = &Processor::dad;
-    Command["DCR"] = &Processor::dcr;
-    Command["DCX"] = &Processor::dcx;
-    Command["DI"] = &Processor::di;
-    Command["EI"] = &Processor::ei;
-    Command["HLT"] = &Processor::hlt;
+    Command["CNZ"] = &Processor::cnz;
+    Command["CC"] = &Processor::cc;
+    Command["CNC"] = &Processor::cnc;
 
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    Command["CMP"] = &Processor::cmp;
-    */
 }
 
 void Processor::PrintMemory(int a, int b)
@@ -253,3 +245,38 @@ void Processor::SetFlags(int& reg)
         else
             psw[1] &= (~(1<<PARITY)&0xff);
 }
+
+void Processor::SetZero(int reg)
+{
+        if(reg == 0)
+            psw[1] |= 1<<ZERO;
+        else
+            psw[1] &= (~(1<<ZERO)&0xff);
+}
+
+void Processor::SetParity(int reg)
+{
+    if((reg&1<<0 + reg&1<<1 + reg&1<<2 + reg&1<<3 + reg&1<<4 + 
+            reg&1<<5 + reg&1<<6 + reg&1<<7) % 2 == 0)
+            psw[1] |= 1<<PARITY;
+        else
+            psw[1] &= (~(1<<PARITY)&0xff);
+}
+
+void Processor::SetSign(int reg)
+{
+    if(reg&0x80)
+            psw[1] |= 1<<SIGN;
+        else
+            psw[1] &= (~(1<<SIGN)&0xff);
+}
+
+void Processor::SetCarry(int reg)
+{
+    if(reg&0x100) // means if 9th bit is 1, set carry flag on
+            psw[1] |= 1<<CARRY;
+        else
+            psw[1] &= (~(1<<CARRY)&0xff);
+}
+
+

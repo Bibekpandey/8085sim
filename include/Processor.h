@@ -27,6 +27,11 @@ public:
     int Stackpop(); // helper to pop from stack
 
     void SetFlags(int &reg); // set flags a/c register input
+    void SetZero(int reg);
+    void SetParity(int reg);
+    void SetAuxCarry(int reg);// not written yet
+    void SetSign(int reg);
+    void SetCarry(int reg);
 
     void PrintFlags();
 
@@ -56,7 +61,6 @@ private:
 
     // pc_increment
     int pc_incr;
-
 
 
     // our functions, for all the commands
@@ -123,7 +127,7 @@ private:
         // b must be NOP type
         // a must be double
 
-        // calling address is two bytes after the current memory location
+        // ing address is two bytes after the current memory location
         int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
 
         // return address is 3 bytes after the current memory location
@@ -183,7 +187,7 @@ private:
         if((addvalue%16 + oldvalue%16) > 15)
             psw[1] |= 1<<AUX_CARRY;
         else
-            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);
 
         // set other flags
         SetFlags(psw[0]); // set flags may not come in use
@@ -320,7 +324,7 @@ private:
         if((addvalue%16 + oldvalue%16+carry) > 15)
             psw[1] |= 1<<AUX_CARRY;
         else
-            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);
 
         // set other flags
         SetFlags(psw[0]); // set flags may not come in use
@@ -350,7 +354,7 @@ private:
         if((addvalue%16 + oldvalue%16) > 15)
             psw[1] |= 1<<AUX_CARRY;
         else
-            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);
 
         // set other flags
         SetFlags(psw[0]); // set flags may not come in use
@@ -381,7 +385,7 @@ private:
         if((addvalue%16 + oldvalue%16+carry) > 15)
             psw[1] |= 1<<AUX_CARRY;
         else
-            psw[1] &= (~(1<<AUX_CARRY)&0xff)
+            psw[1] &= (~(1<<AUX_CARRY)&0xff);
 
         // set other flags
         SetFlags(psw[0]); // set flags may not come in use
@@ -398,12 +402,9 @@ private:
         int reg_paircontent = RP[a.value][0] * 256 + RP[a.value][1];
         int sum = hlcontent + reg_paircontent;
         // set carry if needed
-        if(sum&0x100) // checking 9th bit
-            psw[1] |= 1<<CARRY;
-        else
-            psw[1] &= (~(1<<CARRY)&0xff)
-        sum = sum&0xff;
+        SetCarry(sum);
 
+        sum = sum&0xff;
         hl[0] = sum/256;
         hl[1] = sum%256;
     }
@@ -532,5 +533,522 @@ private:
         // a is register/memory
         if(a.type==MEMORY)
         {
-           int addr 
+           int address = hl[0]*256 + hl[1];
+           // check for auxillary carry
+           if(m_memory[address] % 16 + 1 >15)
+               psw[1] |= 1<<AUX_CARRY;
+            else psw[1] &= (~(1<<AUX_CARRY)&0xff);
+           // increment
+           int incr = m_memory[address]+1;
+           // check for sign
+           SetSign(incr);
+           m_memory.SetValue(address, incr&0xff);
+           // check for zero
+           SetZero(m_memory[address]);
+        }
+        else if(a.type == REGISTER)
+        {
+            // check for auxillary carry
+            if(*(R[a.value]) % 16 + 1 > 15)
+                psw[1] |= 1<<AUX_CARRY;
+            // increment
+            int incr = *(R[a.value]) + 1;
+            // check for sign
+            SetSign(incr);
+
+            *(R[a.value])  = incr&0xff;
+            // check for zero
+            SetZero(*R[a.value]);
+        }
+    }
+
+    // INX *******************
+    void inx(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is register pair.
+        int value = RP[a.value][0] * 256 + RP[a.value][1];
+        value+=1;
+        RP[a.value][0] = value/256;
+        RP[a.value][1] = value%256;
+    }
+    
+    // DCR *********************
+    void dcr(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is register/memory
+        if(a.type==MEMORY)
+        {
+           int address = hl[0]*256 + hl[1];
+           // decrement 
+           int decr = m_memory[address]-1;
+           decr&=0xff;
+           // check for sign
+           SetSign(decr);
+
+           m_memory.SetValue(address, decr);
+           // check for zero
+           SetZero(m_memory[address]);
+        }
+        else if(a.type == REGISTER)
+        {
+            // decrement 
+            *(R[a.value])  = (*(R[a.value]) - 1) & 0xff;
+            // check for sign
+            SetSign(*(R[a.value]));
+            // check for zero
+            SetZero(*(R[a.value]));
+        }
+    }
+    
+    // DCX *******************
+    void dcx(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is register pair.
+        int value = RP[a.value][0] * 256 + RP[a.value][1];
+        value-=1;
+        RP[a.value][0] = value/256;
+        RP[a.value][1] = value%256;
+    }
+    
+    // CMP ******************
+    void cmp(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is register/memory, b is NOP
+        int compare;
+        if(a.type==MEMORY)
+        {
+            int address = hl[0]*256 + hl[1];
+            compare = m_memory[address];
+        }
+        else // a.type==REGISTER
+            compare = *(R[a.value]);
+        // now compare
+        int val = psw[0] - compare;
+        if(val==0)// set zero
+            psw[1] |= 1<<ZERO;
+        else if(val<0) // set carry
+            psw[1] |= 1<<CARRY;
+        else if(val>0) // reset carry and zero
+        {
+            psw[1] &= (~(1<<CARRY)&0xff);
+            psw[1] &= (~(1<<ZERO)&0xff);
+        }
+    }
+    
+    // CPI ******************
+    void cpi(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is immediate value(byte), b is NOP
+        int compare=Helper::ToDec(a.value);
+        // now compare
+        int val = psw[0] - compare;
+        if(val==0)// set zero
+            psw[1] |= 1<<ZERO;
+        else if(val<0) // set carry
+            psw[1] |= 1<<CARRY;
+        else if(val>0) // reset carry and zero
+        {
+            psw[1] &= (~(1<<CARRY)&0xff);
+            psw[1] &= (~(1<<ZERO)&0xff);
+        }
+    }
+
+    // ANA ******************
+    void ana(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is Register/mem, b is NOP
+        int andwith;
+        if(a.type==MEMORY)
+        {
+            int address = hl[0]*256 + hl[1];
+            andwith = m_memory[address];
+        }
+        else // a.type = REGISTER
+            andwith = *(R[a.value]);
+        // do and
+        psw[0]&=andwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+    
+    // ANI ******************
+    void ani(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is byte, b is NOP
+        int andwith= Helper::ToDec(a.value);
+        // do and
+        psw[0]&=andwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+    
+    // XRA ******************
+    void xra(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is Register/mem, b is NOP
+        int xorwith;
+        if(a.type==MEMORY)
+        {
+            int address = hl[0]*256 + hl[1];
+            xorwith = m_memory[address];
+        }
+        else // a.type = REGISTER
+            xorwith = *(R[a.value]);
+        // do xor
+        psw[0]^=xorwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+    
+    // ORA ******************
+    void ora(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is Register/mem, b is NOP
+        int orwith;
+        if(a.type==MEMORY)
+        {
+            int address = hl[0]*256 + hl[1];
+            orwith = m_memory[address];
+        }
+        else // a.type = REGISTER
+            orwith = *(R[a.value]);
+        // do or
+        psw[0]|=orwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+    
+    // ORI ******************
+    void ori(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is byte, b is NOP
+        int orwith= Helper::ToDec(a.value);
+        // do or 
+        psw[0]&=orwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+    
+    // XRI ******************
+    void xri(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is byte, b is NOP
+        int xorwith= Helper::ToDec(a.value);
+        // do xor 
+        psw[0]&=xorwith;
+        // check sign
+        SetSign(psw[0]);
+        // check zero
+        SetZero(psw[0]);
+        // check parity
+        SetParity(psw[0]);
+        // reset carry
+        psw[1] &= (~(1<<CARRY)&0xff);
+        // set aux
+        psw[1] |= 1<<AUX_CARRY;
+    }
+
+    // RLC *******************
+    void rlc(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, B is NOP
+        // shift accumulator
+        psw[0]<<=1;
+        // modify carry bit
+        SetCarry(psw[0]);
+        // set D0, according to carry bit(which is D7)
+        if(psw[0]&1<<CARRY) //set D0
+            psw[0]&=0xffffff;
+        else
+            psw[0]&=0xfffffe;
+        psw[0]&=0xff; // making it 8 bit
+    }
+    
+    // RRC *******************
+    void rrc(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, B is NOP
+        // shift accumulator
+        psw[0]>>=1;
+        // if D0 is 0 reset carry, else set carry
+        if(psw[0]&1) // means D0 is 1
+            psw[1] |= 1<<CARRY;
+        else
+            psw[1] &= (~(1<<CARRY)&0xff);
+        // set D7, according to  D0
+        if(psw[0]&1) //set D7
+            psw[0]|=0x80;
+        else // reset D7
+            psw[0]&=0x7f;
+        psw[0]&=0xff; // making it 8 bit
+    }
+    
+    // RAL *******************
+    void ral(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, B is NOP
+        // shift accumulator
+        psw[0]<<=1;
+        // store the carry bit
+        int carry = psw[1]&1<<CARRY;
+        // modify carry bit
+        SetCarry(psw[0]);
+        // set D0, according to carry bit(which is D7)
+        if(psw[0]&1<<CARRY) //set D0
+            psw[0]&=0xffffff;
+        else
+            psw[0]&=0xfffffe;
+
+        psw[0]&=0xff; // making it 8 bit
+        // modify D0 a/c carry
+        if(carry)
+            psw[0] |= 1;
+        // else it is already 0;
+    }
+    
+    // RAR *******************
+    void rar(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, B is NOP
+        // shift accumulator
+        psw[0]>>=1;
+        // store carry
+        int carry = psw[1]&1<<CARRY;
+        // if D0 is 0 reset carry, else set carry
+        if(psw[0]&1) // means D0 is 1
+            psw[1] |= 1<<CARRY;
+        else
+            psw[1] &= (~(1<<CARRY)&0xff);
+        // set D7, according to carry 
+        if(carry) //set D7
+            psw[0]|=0x80;
+        else // reset D7
+            psw[0]&=0x7f;
+        psw[0]&=0xff; // making it 8 bit
+    }
+
+    // CMA ***************
+    void cma(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, b is NOP
+        psw[0]^=0xff;
+        psw[0]&=0xff;
+    }
+
+    // CMC ****************
+    void cmc(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, b is NOP
+        // complement carry flag
+        psw[1] ^= 1<<CARRY;
+    }
+
+    // STC *****************
+    void stc(Argument a, Argument b)
+    {
+        pc+=pc_incr;
+        // a is NOP, b is NOP
+        psw[1] |= 1<<CARRY;
+    }
+    
+    // JZ ********************
+    void jz(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // jump address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        pc_incr = 3;
+        pc+=pc_incr;
+        if(psw[1]&1<<ZERO)
+            pc = memlocation;
+    }
+    
+    // JNZ ********************
+    void jnz(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // jump address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        pc_incr = 3;
+        pc+=pc_incr;
+        if(!psw[1]&1<<ZERO)
+            pc = memlocation;
+    }
+    
+    // JC ********************
+    void jc(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // jump address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        pc_incr = 3;
+        pc+=pc_incr;
+        if(psw[1]&1<<CARRY)
+            pc = memlocation;
+    }
+    
+    // JNC ********************
+    void jnc(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // jump address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        pc_incr = 3;
+        pc+=pc_incr;
+        if(!psw[1]&1<<CARRY)
+            pc = memlocation;
+    }
+    
+    // CZ ********************
+    void cz(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // ing address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        // return address is 3 bytes after the current memory location
+        int retlocation = pc+3;
+
+        pc_incr = 3;
+
+        if(psw[1]&1<<ZERO)
+        {
+            pc = memlocation;
+            Stackpush(retlocation); // push the return location to stack
+        }
+    }
+
+    // CNZ ********************
+    void cnz(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // ing address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        // return address is 3 bytes after the current memory location
+        int retlocation = pc+3;
+
+        pc_incr = 3;
+
+        if(!psw[1]&1<<ZERO)
+        {
+            pc = memlocation;
+            Stackpush(retlocation); // push the return location to stack
+        }
+    }
+    
+    // CC ********************
+    void cc(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // ing address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        // return address is 3 bytes after the current memory location
+        int retlocation = pc+3;
+
+        pc_incr = 3;
+
+        if(psw[1]&1<<CARRY)
+        {
+            pc = memlocation;
+            Stackpush(retlocation); // push the return location to stack
+        }
+    }
+
+    // CNC ********************
+    void cnc(Argument a, Argument b)
+    {
+        // b must be NOP type
+        // a must be double
+
+        // ing address is two bytes after the current memory location
+        int memlocation = m_memory[pc+2]*256 + m_memory[pc+1];
+
+        // return address is 3 bytes after the current memory location
+        int retlocation = pc+3;
+
+        pc_incr = 3;
+
+        if(!psw[1]&1<<CARRY)
+        {
+            pc = memlocation;
+            Stackpush(retlocation); // push the return location to stack
+        }
+    }
 };
