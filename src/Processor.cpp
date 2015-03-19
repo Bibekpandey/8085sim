@@ -1,4 +1,5 @@
 #include <Processor.h>
+#include <cstdlib>
 
 
 Processor::Processor()
@@ -115,22 +116,27 @@ void Processor::Run()
      {
          while(Execute())
          {
-             std::cout << "what do you want to view? (r for registers, m for memory : ";
-             std::cin >> input;
-             if(input=='r')
-                 PrintRegisters();
-             else if(input=='m')
+             //std::cout << "want to view memory? ( 'm' if yes, else any char ):  ";
+             std::cin.get();
+             //if(input=='m')
              {
                  int a[2];
-                 std::cout << "enter memory location range(separated by space";
-                 std::cin >> a[0] >> a[1];
-                 PrintMemory(a[0], a[1]);
+                 //std::cout << "enter memory location range(separated by space";
+                 //std::cin >> a[0] >> a[1];
+                 //PrintMemory(a[0], a[1]);
+                 PrintMemory(8000, 8005);
              }
+             PrintRegisters();
              PrintFlags();
          }
      }
      else
-         while(Execute())
+         while(Execute());
+             int a[2];
+             std::cout << "enter memory location range(separated by space";
+             std::cin >> a[0] >> a[1];
+             PrintMemory(a[0], a[1]);
+             PrintRegisters();
              PrintFlags();
 }
 
@@ -180,7 +186,7 @@ bool Processor::Execute()
     std::map<std::string, f>::const_iterator it;
     it = Command.find(i.command);
 
-    std::cout << "calling function : " << i.command << std::endl;
+    std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
     (this->*it->second)(i.arg1, i.arg2);
     return true;
 }

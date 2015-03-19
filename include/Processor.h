@@ -13,7 +13,7 @@ class Processor
 {
 public:
     typedef void(Processor::*f)(Argument, Argument);
-    enum { SIGN=7, ZERO=5, AUX_CARRY=3, PARITY=1, CARRY=0}; // the bits of flag register
+    enum { SIGN=7, ZERO=6, AUX_CARRY=4, PARITY=2, CARRY=0}; // the bits of flag register
 
     Processor();
     ~Processor(){}
@@ -934,7 +934,7 @@ private:
 
         pc_incr = 3;
         pc+=pc_incr;
-        if(!psw[1]&1<<ZERO)
+        if(!(psw[1]&1<<ZERO))
             pc = memlocation;
     }
     
@@ -964,7 +964,8 @@ private:
 
         pc_incr = 3;
         pc+=pc_incr;
-        if(!psw[1]&1<<CARRY)
+
+        if(!(psw[1]&1<<CARRY))
             pc = memlocation;
     }
     
@@ -1003,7 +1004,7 @@ private:
 
         pc_incr = 3;
 
-        if(!psw[1]&1<<ZERO)
+        if(!(psw[1]&1<<ZERO))
         {
             pc = memlocation;
             Stackpush(retlocation); // push the return location to stack
@@ -1045,7 +1046,7 @@ private:
 
         pc_incr = 3;
 
-        if(!psw[1]&1<<CARRY)
+        if(!(psw[1]&1<<CARRY))
         {
             pc = memlocation;
             Stackpush(retlocation); // push the return location to stack

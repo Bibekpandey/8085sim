@@ -1,3 +1,47 @@
-mvi a, 10
-aci 20 
-rst5
+;Sorting 5 data in ascending order(bubble)
+; first populate memory with numbers
+mvi a, 0a
+sta 1f40
+dcr a
+sta 1f41
+dcr a
+sta 1f42
+dcr a
+sta 1f43
+dcr a
+sta 1f44
+dcr a
+sta 1f45
+dcr a
+sta 1f46
+dcr a
+sta 1f47
+dcr a
+sta 1f48
+dcr a
+sta 1f49
+
+;done populating
+ mvi c, 0A ; counter
+ dcr c     ; loop to one element less
+ l1: lxi h, 1f40 ; always start with first element
+ push b     ; store the counter
+ l2: inx h
+ mov a, m   ; store current element to a
+ dcx h      ; to check with element before
+ cmp m      ; compare current element with elememt before
+ jnc noswap ; if current element is greater, no swap
+ ; swap the current element and the previous element
+ mov b, m   ; save previous element to b
+ mov m, a   ; store current element to previous
+ inx h      ;
+ mov m, b   ; store previous element to current
+ jmp afterswap
+ ; done swapping
+ noswap: inx h
+ afterswap: dcr c
+ jnz l2
+ pop b
+ dcr c
+ jnz l1
+ rst5

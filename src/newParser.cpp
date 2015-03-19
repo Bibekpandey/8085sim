@@ -98,13 +98,14 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		// trim spaces
 		Helper::LTrim(temp);
 		Helper::RTrim(temp);
-		if(temp.length()==0) continue; // no instruction on the line
-		if(temp[0]==';') continue; // comment line
+		if(temp.length()==0) {count++;continue;} // no instruction on the line
+		if(temp[0]==';') {count++;continue;} // comment line}
 
 		temp = Helper::ToUpper(temp);
 
 		// break the line into comment and instruction
 		std::vector<std::string> insAndCommnt = Helper::SplitIntoTwo(temp, ';');
+        Helper::RTrim(insAndCommnt[0]);
 		// first element has the instruction
 		// now break into label and instruction
 		std::vector<std::string> labelAndIns = Helper::SplitIntoTwo(insAndCommnt[0], ':');
