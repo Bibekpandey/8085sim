@@ -13,7 +13,7 @@ m_VBox1(Gtk::ORIENTATION_VERTICAL),
 m_VBox2(Gtk::ORIENTATION_VERTICAL),
 m_VBox_Register(Gtk::ORIENTATION_VERTICAL),
 m_VBox_Flag(Gtk::ORIENTATION_VERTICAL),
-m_Table(7,2,true),
+m_Table(7,7,true),
 m_VBox_run(Gtk::ORIENTATION_VERTICAL),
 m_button("Run"),
 m_button_strobe("strobe"),
@@ -70,12 +70,19 @@ l_value("00")
 	m_Notebook.set_border_width(10);
 	m_Frame1.set_border_width(10);
 	m_Frame.set_border_width(10);
+	m_Frame2.set_border_width(10);
+
+	/*----- 8255 PPI part -------*/
+	add(m_Frame2);
+	m_Frame2.set_label("8255 PPI");
+	m_Frame2.set_shadow_type(Gtk::SHADOW_ETCHED_OUT);
 
 	/* Set table position */
 	m_Table.attach(m_VBox_run, 0,1,0,1);
-	m_Table.attach(m_Notebook, 5,7,1,6);
-	m_Table.attach(m_Frame, 4,5,1,6);
-	m_Table.attach(m_Frame1, 3,4,1,6);
+	m_Table.attach(m_Notebook, 5,7,1,4);
+	m_Table.attach(m_Frame, 4,5,1,4);
+	m_Table.attach(m_Frame1, 3,4,1,4);
+	m_Table.attach(m_Frame2, 3,7,4,7);
 	m_Table.attach(m_TextView, 0,3,1,6);
 
 	/*---- Fill Flag ------*/
