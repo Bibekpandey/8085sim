@@ -1,7 +1,6 @@
 #include <Processor.h>
 #include <cstdlib>
 
-
 Processor::Processor()
 {
     // initialize all registers value to zero;
@@ -97,6 +96,12 @@ void Processor::Initialize(NewParser*p)
     Command["CC"] = &Processor::cc;
     Command["CNC"] = &Processor::cnc;
 
+    //interrput instructions
+    Command["EI"] = &Processor::ei;
+    Command["DI"] = &Processor::di;
+    Command["SIM"] = &Processor::sim;
+    Command["RIM"] = &Processor::rim;
+
 }
 
 void Processor::PrintMemory(int a, int b)
@@ -142,6 +147,7 @@ void Processor::Run()
 
 
 bool Processor::Execute()
+
 {
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
@@ -188,6 +194,36 @@ bool Processor::Execute()
 
     std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
     (this->*it->second)(i.arg1, i.arg2);
+
+//check for the interrupt and status value
+   if(pin.interruptEnableFlipFlop)
+     {
+        if(pin.TRAP.status && pin.TRAP.value)
+          { 
+          std::cout<<"Trap"<<std::endl;
+          std::cout<<pin.TRAP.value<<std::endl; 
+          }
+
+        else if(pin.RST_7_5.status && pin.RST_7_5.value)
+            {
+             std::cout<<"RST 7.5"<<std::endl;
+             std::cout<<pin.RST_7_5.value<<std::endl; 
+            }
+
+        else if(pin.RST_6_5.status && pin.RST_6_5.value)
+           { 
+            std::cout<<"RST 6.5" <<std::endl;
+            std::cout<<pin.RST_6_5.value<<std::endl; 
+           }
+        else if(pin.RST_5_5.status && pin.RST_5_5.value)
+           {
+            std::cout<<"RST 5.5"<<std::endl;
+            std::cout<<pin.RST_5_5.value<<std::endl; 
+           }
+     }
+
+//    Share::interrupt = true;
+   
     return true;
 }
 

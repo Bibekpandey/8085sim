@@ -1,6 +1,7 @@
 #ifndef GTKMM_EXAMPLEWINDOW_H
 #define GTKMM_EXAMPLEWINDOW_H
 #include <gtkmm.h>
+#include <Helper.h>  
 
 class ExampleWindow : public Gtk::Window 
 {
@@ -14,7 +15,7 @@ protected:
 	void on_button_clicked();
     void on_button_clicked_strobe();
     void updateflag_register();
-    
+  
 	Gtk::Button m_button;
 	Gtk::Button m_button_strobe;
     
