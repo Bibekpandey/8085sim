@@ -15,9 +15,9 @@ OBJ_FILES := $(addprefix $(OBJ_DIR)/, $(CPP_FILES:$(SRC_DIR)/%.cpp=%.o))
 
 ## Compiler and linker flags and libraries to use
 CC := g++
-LDLIBS := 
-CXXFLAGS := -I$(INC_DIR) -std=c++11 -MMD 
-LDFLAGS := --std=c++11 $(LDLIBS) 
+LDLIBS :=  
+CXXFLAGS :=  -I$(INC_DIR) -std=c++11 -MMD 
+LDFLAGS := --std=c++11 $(LDLIBS) `pkg-config gtkmm-3.0 --cflags --libs`
 
 ## Build files
 
@@ -27,7 +27,7 @@ $(BIN_DIR)/simulator: $(OBJ_FILES) | $(BIN_DIR)
 	$(CC) -o $@ $^ $(LDFLAGS) -I$(INC_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CC) -c -o $@ $< $(CXXFLAGS)
+	$(CC) -c -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)

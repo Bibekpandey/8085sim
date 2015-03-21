@@ -188,6 +188,7 @@ bool Processor::Execute()
 
     std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
     (this->*it->second)(i.arg1, i.arg2);
+    // check interrupt
     return true;
 }
 
@@ -284,5 +285,4 @@ void Processor::SetCarry(int reg)
         else
             psw[1] &= (~(1<<CARRY)&0xff);
 }
-
 
