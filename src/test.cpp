@@ -3,7 +3,7 @@
 #include <newParser.h>
 #include <Processor.h>
 
-int main()
+void executeFile()
 {
     try
     {
