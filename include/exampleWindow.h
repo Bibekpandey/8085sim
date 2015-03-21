@@ -18,8 +18,7 @@ protected:
   
 	Gtk::Button m_button;
 	Gtk::Button m_button_strobe;
-    
-    Gtk::Table m_Table;
+  Gtk::Table m_Table;
 
 	Gtk::Frame m_Frame;
 	Gtk::Frame m_Frame1;
@@ -32,6 +31,12 @@ protected:
 	Gtk::Box m_VBox_Register,m_VBox_Flag;
 	Gtk::Box m_S,m_Z,m_AC,m_P,m_C;
 	Gtk::Box m_A, m_BC, m_DE, m_HL;
+
+  //For 8255 ppi
+  Gtk::Frame m_Frame2;
+  Gtk::Button strobeA, strobeB;
+  Gtk::Box m_ppibox, m_strobeA, m_strobeB;
+  Gtk::Label m_labelA, m_labelB, m_labelC;
 
 
 	Gtk::Notebook m_Notebook;
