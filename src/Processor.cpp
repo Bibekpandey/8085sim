@@ -132,7 +132,7 @@ void Processor::Run(Share_Resource &share_resource)
                  //std::cout << "enter memory location range(separated by space";
                  //std::cin >> a[0] >> a[1];
                  //PrintMemory(a[0], a[1]);
-                 PrintMemory(8000, 8005);
+          //  PrintMemory(8000, 8005);
              }
              PrintRegisters();
              PrintFlags();
@@ -148,10 +148,18 @@ void Processor::Run(Share_Resource &share_resource)
          //    PrintFlags();
 }
 
+
+void Processor::copyArray(Memory &mem1, Memory &mem2)
+{
+
+  for(int i=40000; i<50000; i++)
+    mem1.SetValue(i,mem2[i]);
+}
+
 void Processor::copyArray(int *mat1, int *mat2)
 {
 
-    for(int i= 0; i<256; i++)
+    for(int i= 0; i<(sizeof(mat1)/sizeof(*mat1)); i++)
         mat1[i] = mat2[i];
 }
 
@@ -159,8 +167,12 @@ bool Processor::Execute(Share_Resource &share_resource)
 
 {
 
-
+//to copy the io value to iomemory
     copyArray(ioMemory, share_resource.ioMemory);
+    
+//to copy the memory value to iomemory
+
+    copyArray(m_memory, share_resource.systemMemory);
 
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
@@ -246,7 +258,9 @@ share_resource.regD = de[0];
 share_resource.regE = de[1];
 share_resource.regH = hl[0];
 share_resource.regL = hl[1];
+
 copyArray(share_resource.ioMemory, ioMemory);
+copyArray(share_resource.systemMemory, m_memory);
 
 exampleWindow.passed_value(share_resource);
 

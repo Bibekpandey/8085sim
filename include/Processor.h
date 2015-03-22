@@ -63,7 +63,8 @@ public:
     ExampleWindow exampleWindow;
 
     void copyArray(int *mat1, int *mat2);
-   
+    void copyArray(Memory &mem1, Memory &mem2);
+
     void Run(Share_Resource &share_resource);
     void PrintMemory(int a, int b);
     void Initialize(NewParser*);

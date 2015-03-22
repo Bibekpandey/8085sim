@@ -1,12 +1,16 @@
 #ifndef SHARE_H
 #define SHARE_H
 
+#include <Memory.h>
 
 class Share_Resource 
 {
    public:
   
   int ioMemory[256];
+  
+  Memory systemMemory;
+
   int flag;
   int regA;
   int regB;
@@ -24,6 +28,7 @@ class Share_Resource
     ioMemory[65] = 0;
     ioMemory[66] = 0;
     ioMemory[67] = 0;
+
     flag = 0;
     regA = 0;
     regB = 0;

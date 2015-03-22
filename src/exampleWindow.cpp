@@ -311,6 +311,11 @@ outfile.close();
 
 share_resource.ioMemory[64] = 10;
 
+//our input memory starts from 40000-50000
+
+share_resource.systemMemory.SetValue(40000,2);
+share_resource.systemMemory.SetValue(40001,3);
+
 executeFile( share_resource);
 
 }
@@ -322,8 +327,8 @@ void ExampleWindow::on_notebook_switch_page(Gtk::Widget* /* page */, guint page_
 void ExampleWindow::on_entryA_click()
 {
 	//std::cout<<"MAnil";	
- 	int int_valueA=m_SpinButtonA.get_value() ;
-	
+  
+        int int_valueA=m_SpinButtonA.get_value() ;
 
         std::string str_vala = std::to_string(int_valueA);
 	
@@ -393,6 +398,8 @@ std::cout<<"Flag: "<<share_resource.flag<<std::endl;
 std::cout<<"Port A: "<<share_resource.ioMemory[64]<<std::endl;
 std::cout<<"Port B: "<<share_resource.ioMemory[65]<<std::endl;
 std::cout<<"Port C: "<<share_resource.ioMemory[66]<<std::endl;
+
+std::cout<<share_resource.systemMemory[45000]<<std::endl;
 
 //std::string aaaa ="20";
 //m_valC.set_text(aaaa);

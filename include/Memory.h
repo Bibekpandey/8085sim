@@ -24,7 +24,8 @@ class Memory
 				throw "invalid size";
 			m_values[index] = value;
 		}
-			
+		
+      
 	private:
 		std::vector<int> m_values;
 };
