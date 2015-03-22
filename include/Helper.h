@@ -5,7 +5,8 @@
 
 namespace Helper
 {
-	inline bool IsDigit(char c)
+
+    inline bool IsDigit(char c)
 	{
 		return (c>='0' and c<='9');
 	}

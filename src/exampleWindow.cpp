@@ -1,8 +1,9 @@
 #include <iostream>
-#include "exampleWindow.h"
+#include <exampleWindow.h>
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <Processor.h>
 void executeFile();
 
 std::string abc = "0";
@@ -153,7 +154,6 @@ l_value("00")
 	m_Table.attach(m_Frame2, 3,6,4,7);
 	m_Table.attach(m_TextView, 0,3,1,6);
 
-	
 	updateflag_register();
 		m_VBox.pack_start(m_Notebook);
 	//m_VBox.pack_start(m_ButtonBox, Gtk::PACK_SHRINK);
@@ -279,8 +279,6 @@ void ExampleWindow::updateflag_register()
 	m_Frame1.add(m_VBox_Register);
 
 	m_VBox_Register.pack_start(m_A, Gtk::PACK_EXPAND_WIDGET, 5);
-	m_A.pack_start(label_A);
-	m_A.pack_start(a_value);
 
 	m_VBox_Register.pack_start(m_BC, Gtk::PACK_EXPAND_WIDGET, 5);
 	m_BC.pack_start(label_BC);
@@ -304,11 +302,11 @@ void ExampleWindow::on_button_clicked()
 //std::cout<<m_TextView.get_buffer()->get_text();
 
 //file is sucessfully writtn
-std::ofstream outfile("program.txt");
+//std::ofstream outfile("program.txt");
 
-outfile << m_TextView.get_buffer()->get_text();
+//outfile << m_TextView.get_buffer()->get_text();
 
-outfile.close();
+//outfile.close();
 executeFile();
 
 }
@@ -370,10 +368,8 @@ void ExampleWindow::on_textbuffer_changed()
 
 void ExampleWindow::on_button_clicked_strobe()
 {
- 
-    std::cout<<"Here I am"<<std::endl;
-	
-
+   
+        std::cout<<"button is clicked"<<std::endl;
 }
 
 void ExampleWindow::on_spinbutton_digits_changed()

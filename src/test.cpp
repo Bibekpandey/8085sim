@@ -10,7 +10,7 @@ void executeFile()
     Processor processor;
 	NewParser p(8000); // 12345 is starting address
 	p.Initialize("opcodes.txt");
-	p.LoadMnemonics("program.txt", processor.m_memory);
+	p.LoadMnemonics("program1.txt", processor.m_memory);
     processor.Initialize(&p);
     processor.Run();
     }

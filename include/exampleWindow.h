@@ -1,6 +1,7 @@
 #ifndef GTKMM_EXAMPLEWINDOW_H
 #define GTKMM_EXAMPLEWINDOW_H
 #include <gtkmm.h>
+#include <Helper.h>  
 
 class ExampleWindow : public Gtk::Window 
 {
@@ -29,7 +30,8 @@ protected:
 */
 
 
-	Gtk::Button m_button;
+  
+Gtk::Button m_button;
 	Gtk::Button m_button_strobe;
   	Gtk::Table m_Table;
 
