@@ -1,8 +1,8 @@
 #include <iostream>
-#include "exampleWindow.h"
+#include <exampleWindow.h>
 #include <fstream>
 #include <string>
-
+#include <Processor.h>
 void executeFile();
 
 std::string abc = "0";
@@ -85,7 +85,7 @@ l_value("00")
 	m_Table.attach(m_Frame2, 3,7,4,7);
 	m_Table.attach(m_TextView, 0,3,1,6);
 
-	/*---- Fill Flag ------*/
+
 	updateflag_register();
 		m_VBox.pack_start(m_Notebook);
 	m_VBox.pack_start(m_ButtonBox, Gtk::PACK_SHRINK);
@@ -258,7 +258,6 @@ void ExampleWindow::on_textbuffer_changed()
 
 void ExampleWindow::on_button_clicked_strobe()
 {
- 
-    std::cout<<"Here I am"<<std::endl;
-
+   
+        std::cout<<"button is clicked"<<std::endl;
 }

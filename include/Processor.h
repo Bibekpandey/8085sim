@@ -5,9 +5,40 @@
 #include <Helper.h>
 #include <Types.h>
 #include <newParser.h>
-
-
+#include <Peripheral.h>
+#include <Share.h>
 //typedef std::function<void(Argument, Argument)> func; // argument from Types.h
+
+class Signal
+{
+
+public:
+
+  bool value;
+  bool status;
+  
+   Signal()
+   {
+    value = false;
+    status = false;
+   }
+};
+
+class Pin
+{
+  
+   public:
+  
+   Signal RST_7_5, RST_6_5, RST_5_5, TRAP;
+   bool interruptEnableFlipFlop;
+
+   Pin()
+   {
+    interruptEnableFlipFlop = false;
+   }
+
+};
+
 
 class Processor
 {
@@ -17,6 +48,14 @@ public:
 
     Processor();
     ~Processor(){}
+
+//Microprocessor pins configuration
+     Pin pin;   
+
+//I/o memory
+     int ioMemory[256] = {0};
+
+     Peripheral peripheral;
 
     void Run();
     void PrintMemory(int a, int b);
@@ -65,6 +104,52 @@ private:
 
     // our functions, for all the commands
 
+    //EI ********************
+    void ei(Argument a, Argument b)
+    {
+   
+       pin.interruptEnableFlipFlop = true;
+       pc+=pc_incr;
+ 
+    }
+
+    //DI ********************
+    void di(Argument a, Argument b)
+    {
+
+       pin.interruptEnableFlipFlop = false;
+       pc+=pc_incr;
+    }
+
+    //SIM *********************
+    void sim(Argument a, Argument b)
+    {
+
+        if( psw[0]>>4 & 1)
+            pin.RST_7_5.value = false;
+
+        if(psw[0]>>3 & 1)
+        {
+           if(!(psw[0]>>2 & 1))
+            pin.RST_7_5.status = true;
+ 
+           if(!(psw[0]>>1 & 1))
+            pin.RST_6_5.status = true;
+
+           if(!(psw[0] & 1))
+            pin.RST_5_5.status = true;
+        
+        }
+         
+        pc += pc_incr;
+    }
+
+    void rim(Argument a, Argument b)
+    {
+
+        //it seems very difficult to implement so fuckoff
+        pc+= pc_incr;
+    }
     // MOV ******************
     void mov(Argument a, Argument b) // both a and b must be registers
     {
