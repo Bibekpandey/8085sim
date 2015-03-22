@@ -10,23 +10,7 @@ Processor::Processor()
     // so initialize sp to value 65535
     sp[0] = 65535%256;
     sp[1] = 65535/256;
-    // load sudoku
-    std::ifstream f("sudoku.txt");
-    std::string s;
-    getline(f,s);// first line
-    int count =0;
-    int index=0;
-    while(getline(f,s))
-    {
-        for(int k=0;k<s.length();k++)
-        {
-            m_memory.SetValue(36864+index, s[k]-'0');
-            index++;
-        }
-        count+=1;
-        if(count>8)break; // because file contains many sudokus
-    }
-
+   
 }
 
 void Processor::Initialize(NewParser*p)
@@ -130,16 +114,17 @@ void Processor::PrintMemory(int a, int b)
     std::cout << std::endl;
 }
 
-void Processor::Run()
+void Processor::Run(Share_Resource &share_resource)
 {
-     /*
-     char input;
+
+
      char single;
+ 
      std::cout << "single step? (y or n)";
      std::cin >> single;
      if(single=='y')
      {
-         while(Execute())
+         while(Execute(share_resource))
          {
              //std::cout << "want to view memory? ( 'm' if yes, else any char ):  ";
              std::cin.get();
@@ -156,23 +141,29 @@ void Processor::Run()
          }
      }
      else
-         while(Execute());
-             int a[2];
-             std::cout << "enter memory location range(separated by space";
-             std::cin >> a[0] >> a[1];
-             PrintMemory(a[0], a[1]);
-             PrintRegisters();
-             PrintFlags();
-             */
-    while(Execute());
-    PrintMemory(36864, 36964);
-    PrintRegisters();
+         while(Execute(share_resource));
+          //   int a[2];
+         //    std::cout << "enter memory location range(separated by space";
+         //    std::cin >> a[0] >> a[1];
+         //    PrintMemory(a[0], a[1]);
+          //   PrintRegisters();
+         //    PrintFlags();
 }
 
+void Processor::copyArray(int *mat1, int *mat2)
+{
 
-bool Processor::Execute()
+    for(int i= 0; i<256; i++)
+        mat1[i] = mat2[i];
+}
+
+bool Processor::Execute(Share_Resource &share_resource)
 
 {
+
+
+    copyArray(ioMemory, share_resource.ioMemory);
+
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
     Instruction i = opcodeToInstr[opcode];
@@ -216,7 +207,8 @@ bool Processor::Execute()
     std::map<std::string, f>::const_iterator it;
     it = Command.find(i.command);
 
-   // std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
+    std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
+  
     (this->*it->second)(i.arg1, i.arg2);
 
 //check for the interrupt and status value
@@ -247,8 +239,21 @@ bool Processor::Execute()
      }
 
 //    Share::interrupt = true;
-   
-    return true;
+
+share_resource.regA = psw[0];
+share_resource.flag = psw[1];
+share_resource.regB = bc[0];
+share_resource.regC = bc[1];
+share_resource.regD = de[0];
+share_resource.regE = de[1];
+share_resource.regH = hl[0];
+share_resource.regL = hl[1];
+copyArray(share_resource.ioMemory, ioMemory);
+
+exampleWindow.passed_value(share_resource);
+
+return true;
+
 }
 
 void Processor::Stackpush(int pushvalue)

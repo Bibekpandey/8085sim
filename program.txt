@@ -1,5 +1,5 @@
-mvi a, 00h
-mvi c, 02h
-cmp c
+mvi a, 90h
+out 43
+in 40
+out 41
 rst5
-

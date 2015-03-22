@@ -5,8 +5,11 @@
 #include <Helper.h>
 #include <Types.h>
 #include <newParser.h>
-#include <Peripheral.h>
 #include <Share.h>
+#include <Peripheral.h>
+#include <exampleWindow.h>
+#include <Share.h>
+
 //typedef std::function<void(Argument, Argument)> func; // argument from Types.h
 
 class Signal
@@ -57,10 +60,14 @@ public:
 
      Peripheral peripheral;
 
-    void Run();
+    ExampleWindow exampleWindow;
+
+    void copyArray(int *mat1, int *mat2);
+   
+    void Run(Share_Resource &share_resource);
     void PrintMemory(int a, int b);
     void Initialize(NewParser*);
-    bool Execute(); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
+    bool Execute(Share_Resource &share_resource); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
 
     void Stackpush(int a); // helper to push to stack
     int Stackpop(); // helper to pop from stack
@@ -381,11 +388,21 @@ private:
     // OUT *******************
     void out(Argument a, Argument b)
     {
+        int address = Helper::ToDec(a.value);
+        peripheral.updateValues(address,psw[0], ioMemory);
+
+        pc+=pc_incr; 
+
     }
 
     // IN **********************
     void in(Argument a, Argument b)
     {
+
+        int address= Helper::ToDec(a.value);
+         peripheral.insertValues (address, psw[0], ioMemory);
+
+         pc+=pc_incr;
     }
     
     // ADC ********************
