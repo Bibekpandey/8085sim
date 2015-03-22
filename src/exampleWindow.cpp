@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <Processor.h>
+#include <thread>
 void executeFile();
 
 std::string abc = "0";
@@ -235,11 +236,11 @@ void ExampleWindow::on_button_clicked()
 //std::cout<<m_TextView.get_buffer()->get_text();
 
 //file is sucessfully writtn
+
 std::ofstream outfile("program.txt");
-
 outfile << m_TextView.get_buffer()->get_text();
-
 outfile.close();
+
 executeFile();
 
 }

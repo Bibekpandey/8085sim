@@ -226,8 +226,8 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 
 	if(error==0)
 	{
-		for(int i=m_startAddress;i<address;i++)
-			std::cout << Helper::ToHexStr(i)<<" "<< Helper::ToHexStr(mem[i]) << std::endl;;
+//		for(int i=m_startAddress;i<address;i++)
+//			std::cout << Helper::ToHexStr(i)<<" "<< Helper::ToHexStr(mem[i]) << std::endl;;
 	}
 }
 

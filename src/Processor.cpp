@@ -113,7 +113,7 @@ void Processor::PrintMemory(int a, int b)
 
 void Processor::Run()
 {
-     char input;
+    /* char input;
      char single;
      std::cout << "single step? (y or n)";
      std::cin >> single;
@@ -143,6 +143,8 @@ void Processor::Run()
              PrintMemory(a[0], a[1]);
              PrintRegisters();
              PrintFlags();
+    */     
+    while(Execute());
 }
 
 
@@ -192,7 +194,7 @@ bool Processor::Execute()
     std::map<std::string, f>::const_iterator it;
     it = Command.find(i.command);
 
-    std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
+   // std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
     (this->*it->second)(i.arg1, i.arg2);
 
 //check for the interrupt and status value

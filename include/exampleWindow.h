@@ -2,6 +2,7 @@
 #define GTKMM_EXAMPLEWINDOW_H
 #include <gtkmm.h>
 #include <Helper.h>  
+#include <thread>
 
 class ExampleWindow : public Gtk::Window 
 {
