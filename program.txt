@@ -1,0 +1,4 @@
+main: lxi h, 9000
+call solve
+rst5
+

@@ -11,6 +11,23 @@ Processor::Processor()
     // so initialize sp to value 65535
     sp[0] = 65535%256;
     sp[1] = 65535/256;
+    // load sudoku
+    std::ifstream f("sudoku.txt");
+    std::string s;
+    getline(f,s);// first line
+    int count =0;
+    int index=0;
+    while(getline(f,s))
+    {
+        for(int k=0;k<s.length();k++)
+        {
+            m_memory.SetValue(36864+index, s[k]-'0');
+            index++;
+        }
+        count+=1;
+        if(count>8)break; // because file contains many sudokus
+    }
+
 }
 
 void Processor::Initialize(NewParser*p)

@@ -1,0 +1,215 @@
+; SOLVE, is a recursive function
+
+; one convention, always return value is at b, and arguments(if two) are in BC
+main: lxi h, 9000
+call solve
+rst5
+
+solve: mvi c, 51 ; 51 is 81 decimal
+lxi h, 9000
+;check if empty or not
+loop_empty: mov a, m
+ora a
+jz not_complete 		; if zero means, sudoku is not solved
+inx h
+dcr c
+jnz loop_empty
+; return true, store value in b
+mvi b, 01
+ret
+
+not_complete: mvi c, 51 	; again initialize counter to 81
+lxi h, 9000
+loop_solve: mov a, m
+ora a   			; to check if a is zero or not
+jnz not_empty 			; if not zero, it is not empty and proceed to next
+		; if zero, it is empty and so fill the values
+mvi b, 09
+mvi d, 01 			;starting from 1 to 9;
+loop_values: mov m, d   	; set the current element to value of d
+push b
+push psw
+push d
+push h
+call check 			; the index is at L (address at HL) and after return, value is at b
+mov a, b
+ora a 				; if zero, try next, else if not zero, solve the sudoku
+jz try_next
+		; if return value is not zero i.e true, go deeper(call itself)
+		; registers have already been pushed, so no need to push now
+call solve 			; again, d has the true or false value
+				; check the value in b, if true, return true
+mov a, b
+ora a				; if zero means, false return so try next
+jz try_next			; meanse solve returned false
+; if solve returned true, return true
+pop h	
+pop d
+pop psw
+pop b
+mvi b, 01; return true
+ret
+try_next: pop h
+pop d
+pop psw
+pop b
+
+inr d
+dcr b
+jnz loop_values
+mvi m, 00			; put zero on the location and return false, nothing matched
+mvi b, 00
+ret
+not_empty: inx h
+dcr c
+jnz loop_solve
+; end of the loop, return false
+mvi b, 00
+ret
+; end of the routine solve
+
+
+; CHECK function
+
+;check in the row first, all registers have been pushed in the stack, so chill !!
+check: mov a,m  		; store current test value in a
+mov d, a    			; store it in D, for future use
+sta 8000   			; store it in the memory
+; now check in the row
+; start = (index/9)*9
+; find index, index is current l, because initial l is 0
+mov a, l
+sta 8001   			; store the index at memory, might not be needed
+mov b, l    			; to pass to intDiv
+mvi c, 09  			; to pass to int Div
+call int_division   		; answer at b
+mvi c, 09  			; to pass to multiply
+call multiply 			; answer at b
+; b has start value
+mvi c, 09  			; now, this is counter for checking along row
+mov l, b    			; b has start value, mov to l, for iterating
+checkl1: mov a, d
+cmp m
+jnz next_elem   		;if values not equal,  jump to next_elem
+; if equal, check if index equal or not
+lda 8001   			; index stored at 8001
+cmp l      			; checking index
+jz next_elem			; if equal, check other element
+; if not equal, return false
+mvi b, 00  			; return value
+ret
+next_elem: inx h
+dcr c
+jnz checkl1
+; now check the columns
+; calculate start value, ie index%9
+lda 8001
+mov b,a
+mvi c, 09
+call modulus    		; result at b
+mov  l, b
+; b works as counter
+checkl2: lda 8000
+cmp m
+jnz next_elem1  		; if values not equal, jump to next_elem1
+; if equal, check if index equal of not
+lda 8001   			; index stored at 8001
+cmp l   			; checking index
+jz next_elem1 			; if equal, check other element
+; if not equal, return false
+mvi b, 00
+ret
+next_elem1: inx h
+mov a, b
+adi 09
+mov b, a
+; check greater than 81 or not
+mvi c, 51  			; c is not used here , so
+cmp c 				; assuming cmp affects carry flag
+jc  checkl2			; carry means, a is smaller, loop
+
+; now check the box,
+; calculate start index, start=(index/27)*27
+lda 8001    			; load the index in a
+mov b, a
+mvi c, 1b
+call int_division
+mvi c, 1b
+call multiply ; b has start index
+mvi c, 1b      		; 1b=27, we need to check 27 elements from start index
+mov l, b
+checkl3: push b 		; because bc will be used for modulo and all
+push d  			; because, D contains the value to be checked
+mov b, l    			; current index to be modulo nine
+mvi c, 09
+mvi c, 03  			; again need to divide by 3
+call modulus 			; b has result
+call int_division 		; b has result, need to save
+mov c, b 			; store value of b in c
+lda 8001   			; load index in a
+push b  			; store c, which contains (start%9)/3
+mov b,a 			; now b has the index
+mvi c, 09
+call modulus
+mvi c, 03
+call int_division   		; b has (index%9)/3
+mov a, b
+pop b   			; retrive c
+cmp c 				; compare (start%9)/3 and (index%9)/3
+jnz next_elem2  		; if not same, proceed to next element
+; if same, check validity
+mov a, d
+cmp m 				; compare the values
+jnz next_elem2  		; if not same, check next element
+; if same, check if indices match or not
+lda 8001
+cmp l
+jz next_elem2 			; if indices equal, try next
+; else return false
+pop d
+pop b
+mvi b, 00
+ret
+
+next_elem2: pop d
+pop b
+inx h
+dcr c
+jnz checkl3
+; return true
+mvi b, 01
+ret
+; end of CHECK function
+
+
+
+; MULTIPLY function, arguments at BC
+multiply: mvi a, 00
+l1: add b
+dcr c
+jnz l1
+mov b, a
+ret
+
+; Integer division function, arguments at BC
+int_division: mvi d, 00
+mov a, b
+l11: sub c
+inr d
+jz done
+jnc l11
+done: mov b, d
+ret
+
+; Modulus function, arguments at BC
+modulus: mov a, b
+l111: mov d, a
+sub c
+jz zero
+jnc l111
+mov b, d
+jmp end
+zero: mvi b, 00
+jmp end
+end: ret
+

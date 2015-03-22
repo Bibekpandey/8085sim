@@ -95,9 +95,12 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 
 	while(getline(program_file, temp))
 	{
-		// trim spaces
-		Helper::LTrim(temp);
+		// trim spaces, and tabs
+    	Helper::LTrim(temp);
 		Helper::RTrim(temp);
+        Helper::LTrim(temp, '\t');
+        Helper::RTrim(temp, '\t');
+
 		if(temp.length()==0) {count++;continue;} // no instruction on the line
 		if(temp[0]==';') {count++;continue;} // comment line}
 
@@ -105,7 +108,9 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 
 		// break the line into comment and instruction
 		std::vector<std::string> insAndCommnt = Helper::SplitIntoTwo(temp, ';');
+        Helper::RTrim(insAndCommnt[0],'\t');
         Helper::RTrim(insAndCommnt[0]);
+        Helper::RTrim(insAndCommnt[0],'\t');
 		// first element has the instruction
 		// now break into label and instruction
 		std::vector<std::string> labelAndIns = Helper::SplitIntoTwo(insAndCommnt[0], ':');
@@ -116,7 +121,9 @@ void NewParser::LoadMnemonics(std::string file, Memory& mem)
 		// if length of labelAndIns == 1 , no label, else label, process second element
 		if(labelAndIns.size()==2)
 		{
+            Helper::RTrim(insAndCommnt[0],'\t');
 			Helper::RTrim(labelAndIns[0]);
+            Helper::RTrim(labelAndIns[0], '\t');
 			m_labels.push_back(labelAndIns[0]);
 			m_labelAddresses.push_back(address);
 
@@ -286,6 +293,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 				switch(m_instructions[n].arg1.type)
 				{
 					case BYTE:
+                        Helper::RTrim(args[0]);
 						if((Helper::IsHexStr(args[0]) and args[0].length()==2))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -295,6 +303,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 							errors+=1;
 						break;
 					case DOUBLE:
+                        Helper::RTrim(args[0],'H');
 						if((Helper::IsHexStr(args[0]) and args[0].length()==4))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -319,7 +328,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 				switch(m_instructions[n].arg2.type)
 				{
 					case BYTE:
-                        std::cout <<"byte2\n";
+                        Helper::RTrim(args[1],'H');
 						if((Helper::IsHexStr(args[1]) and args[1].length()==2))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -329,6 +338,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 							errors+=1;
 						break;
 					case DOUBLE:
+                        Helper::RTrim(args[1]);
 						if((Helper::IsHexStr(args[1]) and args[1].length()==4))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -373,8 +383,9 @@ bool NewParser::CommandExists(std::string command)
 
 int NewParser::GetInstructionIndex(std::string command)
 {
-	for(int i=0;i<m_instructions.size();i++)
+	for(int i=0;i<m_instructions.size();i++){
 		if(m_instructions[i].command == command)
 			return i;
+    }
 	return -1;
 }
