@@ -2,7 +2,7 @@
 #include "exampleWindow.h"
 #include <fstream>
 #include <string>
-
+#include <cstdlib>
 void executeFile();
 
 std::string abc = "0";
@@ -17,6 +17,30 @@ m_Table(7,7,true),
 m_VBox_run(Gtk::ORIENTATION_VERTICAL),
 m_button("Run"),
 m_button_strobe("strobe"),
+strobeA("Strobe A"),
+strobeB("Strobe B"),
+entryA("Entry A"),
+entryB("Entry B"),
+entryC("Entry C"),
+m_ppibox(Gtk::ORIENTATION_VERTICAL),
+m_strobeA(Gtk::ORIENTATION_VERTICAL),
+m_strobeB(Gtk::ORIENTATION_VERTICAL),
+m_labelA("Port A", Gtk::ALIGN_START),
+m_labelB("Port B", Gtk::ALIGN_START),
+m_labelC("Port C", Gtk::ALIGN_START),
+m_valA("00"),
+m_valB("00"),
+m_valC("00"),
+
+
+m_adjustment_A(Gtk::Adjustment::create(1,1,31,1,5,0)),
+m_adjustment_B(Gtk::Adjustment::create(1,1,31,1,5,0)),
+m_adjustment_C(Gtk::Adjustment::create(1,1,31,1,5,0)),
+
+m_SpinButtonA(m_adjustment_A),
+m_SpinButtonB(m_adjustment_B),
+m_SpinButtonC(m_adjustment_C),
+
 m_Label1("S", Gtk::ALIGN_START),
 m_Label2("Z", Gtk::ALIGN_START),
 m_Label3("AC", Gtk::ALIGN_START),
@@ -50,8 +74,7 @@ l_value("00")
 &ExampleWindow::on_button_clicked) );
 
     m_ButtonBox.pack_start(m_button_strobe, Gtk::PACK_SHRINK);
-	m_button_strobe.signal_clicked().connect( sigc::mem_fun(*this,
-&ExampleWindow::on_button_clicked_strobe));
+	m_button_strobe.signal_clicked().connect( sigc::mem_fun(*this,&ExampleWindow::on_button_clicked_strobe));
 	
 	add(m_Table);
 	add(m_VBox);
@@ -76,19 +99,64 @@ l_value("00")
 	add(m_Frame2);
 	m_Frame2.set_label("8255 PPI");
 	m_Frame2.set_shadow_type(Gtk::SHADOW_ETCHED_OUT);
+	m_Frame2.add(m_ppibox);
+	m_ppibox.set_border_width(10);
+	m_ppibox.pack_start(m_strobeA, Gtk::PACK_EXPAND_WIDGET, 5);
+	m_strobeA.pack_start(strobeA,Gtk::PACK_SHRINK);	
+
+	m_ppibox.pack_start(m_strobeB, Gtk::PACK_EXPAND_WIDGET, 5);
+	m_strobeB.pack_start(strobeB, Gtk::PACK_SHRINK);
+
+	m_ppibox.pack_start(m_PortA, Gtk::PACK_EXPAND_WIDGET, 5);	
+	m_PortA.pack_start(m_labelA);
+	m_PortA.pack_start(m_valA);
+	m_SpinButtonA.set_wrap();
+	m_PortA.pack_start(m_SpinButtonA);
+	
+
+	//button_boxA.pack_start(entryA, Gtk::PACK_SHRINK);
+	entryA.signal_clicked().connect( sigc::mem_fun(*this,
+	&ExampleWindow::on_entryA_click));
+	
+	m_PortA.pack_start(entryA, Gtk::PACK_SHRINK);
+	
+	
+	m_ppibox.pack_start(m_PortB, Gtk::PACK_EXPAND_WIDGET, 5);
+	m_PortB.pack_start(m_labelB);
+	m_PortB.pack_start(m_valB);
+	m_SpinButtonB.set_wrap();
+	m_PortB.pack_start(m_SpinButtonB);
+	m_PortB.pack_start(entryB, Gtk::PACK_SHRINK);
+	entryB.signal_clicked().connect( sigc::mem_fun(*this,
+	&ExampleWindow::on_entryB_click));	
+	
+	m_ppibox.pack_start(m_PortC, Gtk::PACK_EXPAND_WIDGET, 5);	
+	m_PortC.pack_start(m_labelC);
+	m_PortC.pack_start(m_valC);
+	m_SpinButtonC.set_wrap();
+	m_PortC.pack_start(m_SpinButtonC);
+	m_PortC.pack_start(entryC, Gtk::PACK_SHRINK);
+	entryC.signal_clicked().connect( sigc::mem_fun(*this,
+	&ExampleWindow::on_entryC_click));
+	
+	
+
+	
+	
+	
 
 	/* Set table position */
 	m_Table.attach(m_VBox_run, 0,1,0,1);
 	m_Table.attach(m_Notebook, 5,7,1,4);
 	m_Table.attach(m_Frame, 4,5,1,4);
 	m_Table.attach(m_Frame1, 3,4,1,4);
-	m_Table.attach(m_Frame2, 3,7,4,7);
+	m_Table.attach(m_Frame2, 3,6,4,7);
 	m_Table.attach(m_TextView, 0,3,1,6);
 
-	/*---- Fill Flag ------*/
+	
 	updateflag_register();
 		m_VBox.pack_start(m_Notebook);
-	m_VBox.pack_start(m_ButtonBox, Gtk::PACK_SHRINK);
+	//m_VBox.pack_start(m_ButtonBox, Gtk::PACK_SHRINK);
 
 	// Create the buffer and set it for the TextView:
 	m_refTextBuffer = Gtk::TextBuffer::create();
@@ -183,7 +251,8 @@ ExampleWindow::~ExampleWindow()
 }
 void ExampleWindow::updateflag_register()
 {
-m_VBox_Flag.set_border_width(20);
+	/*------- FIll Flag-------*/
+	m_VBox_Flag.set_border_width(20);
 	m_Frame.add(m_VBox_Flag);
 	m_VBox_Flag.pack_start(m_S, Gtk::PACK_EXPAND_WIDGET, 5);
 	m_S.pack_start(m_Label1);
@@ -248,6 +317,49 @@ void ExampleWindow::on_notebook_switch_page(Gtk::Widget* /* page */, guint page_
 	std::cout << "Switched to tab with index " << page_num << std::endl;
 	//You can also use m_Notebook.get_current_page() to get this index.
 }
+void ExampleWindow::on_entryA_click()
+{
+	//std::cout<<"MAnil";	
+ 	int int_valueA=m_SpinButtonA.get_value() ;
+	
+
+        std::string str_vala = std::to_string(int_valueA);
+	
+	std::cout<<str_vala<<std::endl;
+	//valA= static_cast<char>(int_valueA);
+	m_valA.set_text(str_vala);
+	
+}
+
+void ExampleWindow::on_entryB_click()
+{
+	//std::cout<<"MAnil";	
+ 	int int_valueB=m_SpinButtonB.get_value() ;
+	
+
+        std::string str_valb = std::to_string(int_valueB);
+	
+	std::cout<<str_valb<<std::endl;
+	//valA= static_cast<char>(int_valueA);
+	m_valB.set_text(str_valb);
+	
+}
+void ExampleWindow::on_entryC_click()
+{
+	//std::cout<<"MAnil";	
+ 	int int_valueC=m_SpinButtonC.get_value() ;
+	
+
+        std::string str_valc = std::to_string(int_valueC);
+	
+	std::cout<<str_valc<<std::endl;
+	//valA= static_cast<char>(int_valueA);
+	m_valC.set_text(str_valc);
+	
+}
+
+
+
 
 void ExampleWindow::on_textbuffer_changed()
 {
@@ -260,5 +372,13 @@ void ExampleWindow::on_button_clicked_strobe()
 {
  
     std::cout<<"Here I am"<<std::endl;
+	
 
 }
+
+void ExampleWindow::on_spinbutton_digits_changed()
+{
+  // std::cout<<m_SpinButtonA.get_value() ;
+}
+
+
