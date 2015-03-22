@@ -66,7 +66,7 @@ public:
    
     void Run(Share_Resource &share_resource);
     void PrintMemory(int a, int b);
-    void Initialize(NewParser*);
+    void Initialize(NewParser*, ExampleWindow*);
     bool Execute(Share_Resource &share_resource); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
 
     void Stackpush(int a); // helper to push to stack
@@ -98,6 +98,7 @@ public:
     Memory m_memory;
 
 private:
+    ExampleWindow* m_window;
     int sp[2], pc, bc[2], de[2], hl[2], psw[2];
     std::map<std::string, int*> R; // stores map of strings and registers
     std::map<std::string, int*> RP; // stores map of strings and reg pairs

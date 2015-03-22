@@ -18,11 +18,13 @@ protected:
 	void on_textbuffer_changed();
 	void on_button_clicked();
     void on_button_clicked_strobe();
+    void on_button_clicked_singlestep();
     void updateflag_register();
     void on_spinbutton_digits_changed();
     void on_entryA_click();
     void on_entryB_click();
     void on_entryC_click();
+    void threadtest();
   
     Share_Resource share_resource;
  
@@ -38,6 +40,7 @@ protected:
 
   
     Gtk::Button m_button;
+    Gtk::Button m_button_singlestep;
 	Gtk::Button m_button_strobe;
   	Gtk::Table m_Table;
 
@@ -48,7 +51,7 @@ protected:
 	Gtk::TextView m_TextView;
 	Glib::RefPtr<Gtk::TextBuffer> m_refTextBuffer;
 	
-	Gtk::Box m_VBox, m_VBox_run;
+	Gtk::Box m_VBox, m_VBox_run,m_VBox_singlestep;
 	Gtk::Box m_VBox_Register,m_VBox_Flag;
 	Gtk::Box m_S,m_Z,m_AC,m_P,m_C;
 	Gtk::Box m_A, m_BC, m_DE, m_HL;
@@ -70,7 +73,7 @@ protected:
 	Gtk::Label label_A, label_BC, label_DE, label_HL;
 	Gtk::Label s_value, z_value, ac_value, p_value, cy_value;
 	Gtk::Label a_value, b_value, c_value, d_value, e_value, h_value, l_value;
-	Gtk::ButtonBox m_ButtonBox;
+	Gtk::ButtonBox m_ButtonBox,m_button_box_singlestep;;
 	//Tree model columns:
   class ModelColumns : public Gtk::TreeModel::ColumnRecord
   {

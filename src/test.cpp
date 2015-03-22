@@ -3,8 +3,9 @@
 #include <newParser.h>
 #include <Processor.h>
 #include <Share.h>
+#include <exampleWindow.h>
 
-void executeFile(Share_Resource &share_resource)
+void executeFile(ExampleWindow* window, Share_Resource &share_resource)
 {
     try
     {
@@ -12,7 +13,7 @@ void executeFile(Share_Resource &share_resource)
 	NewParser p(8000); // 12345 is starting address
 	p.Initialize("opcodes.txt");
 	p.LoadMnemonics("program.txt", processor.m_memory);
-    processor.Initialize(&p);
+    processor.Initialize(&p, window);
     processor.Run(share_resource);
     }
     catch(std::string a)

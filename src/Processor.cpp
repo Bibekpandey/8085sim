@@ -13,7 +13,7 @@ Processor::Processor()
    
 }
 
-void Processor::Initialize(NewParser*p)
+void Processor::Initialize(NewParser*p, ExampleWindow * window)
 {
     // map the opcodes in parser to instructions,and store it in opcodeToInstr map
     for(int i=0;i<p->m_opcodes.size();i++)
@@ -23,6 +23,9 @@ void Processor::Initialize(NewParser*p)
 
     // initialize program counter
     pc = p->m_startAddress; 
+
+    // window
+    m_window = window;
 
     // map registers  and register pairs
     RP["SP"] = sp;

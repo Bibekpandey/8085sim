@@ -6,7 +6,8 @@
 #include <Processor.h>
 #include <thread>
 
-void executeFile( Share_Resource &share_resource);
+void executeFile(ExampleWindow*, Share_Resource &share_resource);
+int dummy = 0;
 
 std::string abc = "0";
 
@@ -20,6 +21,8 @@ m_Table(7,7,true),
 m_VBox_run(Gtk::ORIENTATION_VERTICAL),
 m_button("Run"),
 m_button_strobe("strobe"),
+m_VBox_singlestep(Gtk::ORIENTATION_VERTICAL),
+m_button_singlestep("Single Step"),
 strobeA("Strobe A"),
 strobeB("Strobe B"),
 entryA("Entry A"),
@@ -77,6 +80,11 @@ l_value("00")
 	m_button.signal_clicked().connect( sigc::mem_fun(*this,
 &ExampleWindow::on_button_clicked) );
 
+    m_VBox_singlestep.pack_start(m_button_box_singlestep, Gtk::PACK_SHRINK);
+    m_button_box_singlestep.pack_start(m_button_singlestep, Gtk::PACK_SHRINK);
+    m_button_singlestep.signal_clicked().connect(sigc::mem_fun(*this, 
+    &ExampleWindow::on_button_clicked_singlestep));
+
     m_ButtonBox.pack_start(m_button_strobe, Gtk::PACK_SHRINK);
 	m_button_strobe.signal_clicked().connect( sigc::mem_fun(*this,&ExampleWindow::on_button_clicked_strobe));
 	
@@ -84,6 +92,7 @@ l_value("00")
 
     add(m_Table);
 	add(m_VBox);
+    add(m_VBox_singlestep);
 	add(m_Frame);
 	add(m_Frame1);
 	/* Set the frames label */
@@ -148,6 +157,7 @@ l_value("00")
 
 	/* Set table position */
 	m_Table.attach(m_VBox_run, 0,1,0,1);
+	m_Table.attach(m_VBox_singlestep, 0,3,0,3);
 	m_Table.attach(m_Notebook, 5,7,1,4);
 	m_Table.attach(m_Frame, 4,5,1,4);
 	m_Table.attach(m_Frame1, 3,4,1,4);
@@ -243,8 +253,25 @@ for(guint i = 0; i < 2; i++)
 	&ExampleWindow::on_notebook_switch_page) );
 
 	show_all_children();
+    
+    // thread creation
+    Glib::Thread::create(sigc::mem_fun(*this, &ExampleWindow::threadtest), true);
 
 }
+
+void ExampleWindow::threadtest()
+{
+    while(dummy!=1);
+    dummy=0;
+    m_Label1.set_text("yeah!!");
+    //executeFile(this, share_resource);
+}
+
+void ExampleWindow::on_button_clicked_singlestep()
+{
+    dummy=1;
+}
+
 
 ExampleWindow::~ExampleWindow()
 {
@@ -302,6 +329,7 @@ void ExampleWindow::updateflag_register()
 void ExampleWindow::on_button_clicked()
 {
 
+    dummy = 1;
 //std::cout<<m_TextView.get_buffer()->get_text();
 
 //file is sucessfully writtn
@@ -311,7 +339,7 @@ outfile.close();
 
 share_resource.ioMemory[64] = 10;
 
-executeFile( share_resource);
+executeFile(this, share_resource);
 
 }
 
