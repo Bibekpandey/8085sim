@@ -25,7 +25,7 @@ void Processor::Initialize(NewParser*p, ExampleWindow * window)
     pc = p->m_startAddress; 
 
     // window
-    m_window = window;
+    m_exampleWindow = window;
 
     // map registers  and register pairs
     RP["SP"] = sp;
@@ -117,9 +117,28 @@ void Processor::PrintMemory(int a, int b)
     std::cout << std::endl;
 }
 
+void Processor::updateGUI()
+{
+    m_exampleWindow->a_value.set_text(std::to_string(psw[0]));
+    m_exampleWindow->b_value.set_text(std::to_string(bc[0]));
+    m_exampleWindow->c_value.set_text(std::to_string(bc[1]));
+    m_exampleWindow->d_value.set_text(std::to_string(de[0]));
+    m_exampleWindow->e_value.set_text(std::to_string(de[1]));
+    m_exampleWindow->h_value.set_text(std::to_string(hl[0]));
+    m_exampleWindow->l_value.set_text(std::to_string(hl[1]));
+    m_exampleWindow->s_value.set_text(std::to_string(psw[1]&1<<SIGN?1:0));
+    m_exampleWindow->z_value.set_text(std::to_string(psw[1]&1<<ZERO?1:0));
+    m_exampleWindow->ac_value.set_text(std::to_string(psw[1]&1<<AUX_CARRY?1:0));
+    m_exampleWindow->p_value.set_text(std::to_string(psw[1]&1<<PARITY?1:0));
+    m_exampleWindow->cy_value.set_text(std::to_string(psw[1]&1<<CARRY?1:0));
+}
+
+
 void Processor::Run(Share_Resource &share_resource)
 {
-
+     while(Execute(share_resource));
+     updateGUI();
+     return;
 
      char single;
  
@@ -163,8 +182,6 @@ void Processor::copyArray(int *mat1, int *mat2)
 bool Processor::Execute(Share_Resource &share_resource)
 
 {
-
-
     copyArray(ioMemory, share_resource.ioMemory);
 
     int opcode = m_memory[pc];
@@ -253,7 +270,7 @@ share_resource.regH = hl[0];
 share_resource.regL = hl[1];
 copyArray(share_resource.ioMemory, ioMemory);
 
-exampleWindow.passed_value(share_resource);
+m_exampleWindow->passed_value(share_resource);
 
 return true;
 

@@ -1,0 +1,4 @@
+mvi a, aah
+mvi b, 0bh
+add b
+rst5

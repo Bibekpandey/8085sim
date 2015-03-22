@@ -6,6 +6,9 @@
 #include <Processor.h>
 #include <thread>
 
+extern Processor processor;
+extern NewParser parser;
+
 void executeFile(ExampleWindow*, Share_Resource &share_resource);
 int dummy = 0;
 
@@ -13,6 +16,8 @@ std::string abc = "0";
 
 ExampleWindow::ExampleWindow()
 : m_VBox(Gtk::ORIENTATION_VERTICAL),
+singlestep(0),
+run(0),
 m_VBox1(Gtk::ORIENTATION_VERTICAL),
 m_VBox2(Gtk::ORIENTATION_VERTICAL),
 m_VBox_Register(Gtk::ORIENTATION_VERTICAL),
@@ -205,7 +210,7 @@ l_value("00")
 	  Gtk::TreeModel::Row row = *(m_refTreeModel->append());
 	  row[m_Columns.m_col_address_hex] = 1;
 	  row[m_Columns.m_col_address] = i;
-	  row[m_Columns.m_col_data] = 10;
+	  row[m_Columns.m_col_data] = i;
 
  }
 
@@ -261,10 +266,10 @@ for(guint i = 0; i < 2; i++)
 
 void ExampleWindow::threadtest()
 {
-    while(dummy!=1);
-    dummy=0;
-    m_Label1.set_text("yeah!!");
+    while(run!=1);
+    run=0;
     //executeFile(this, share_resource);
+    processor.Run(share_resource);
 }
 
 void ExampleWindow::on_button_clicked_singlestep()
@@ -329,7 +334,6 @@ void ExampleWindow::updateflag_register()
 void ExampleWindow::on_button_clicked()
 {
 
-    dummy = 1;
 //std::cout<<m_TextView.get_buffer()->get_text();
 
 //file is sucessfully writtn
@@ -339,7 +343,12 @@ outfile.close();
 
 share_resource.ioMemory[64] = 10;
 
-executeFile(this, share_resource);
+parser.LoadMnemonics("program.txt", processor.m_memory);
+processor.Initialize(&parser, this);
+
+run = 1;
+
+//executeFile(this, share_resource);
 
 }
 

@@ -8,6 +8,8 @@ class ExampleWindow : public Gtk::Window
 {
 
 public:
+    int singlestep, run; // to run on singlestep or not
+
 	ExampleWindow();
 	virtual ~ExampleWindow();
 
@@ -38,6 +40,7 @@ protected:
 */
 
 
+  public:
   
     Gtk::Button m_button;
     Gtk::Button m_button_singlestep;
