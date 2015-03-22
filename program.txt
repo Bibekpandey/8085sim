@@ -1,2 +1,5 @@
-mvi a,10
+mvi a,90
+out 43
+in 40
+out 41
 rst5

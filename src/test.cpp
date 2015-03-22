@@ -2,8 +2,9 @@
 #include <vector>
 #include <newParser.h>
 #include <Processor.h>
+#include <Share.h>
 
-void executeFile()
+void executeFile(Share_Resource &share_resource)
 {
     try
     {
@@ -12,7 +13,7 @@ void executeFile()
 	p.Initialize("opcodes.txt");
 	p.LoadMnemonics("program.txt", processor.m_memory);
     processor.Initialize(&p);
-    processor.Run();
+    processor.Run(share_resource);
     }
     catch(std::string a)
     {

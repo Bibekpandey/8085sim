@@ -5,7 +5,8 @@
 #include <cstdlib>
 #include <Processor.h>
 #include <thread>
-void executeFile();
+
+void executeFile( Share_Resource &share_resource);
 
 std::string abc = "0";
 
@@ -64,6 +65,7 @@ d_value("00"),
 e_value("00"),
 h_value("00"),
 l_value("00")
+
 {
 	set_title("Gtk::Notebook example");
 	set_border_width(10);
@@ -78,7 +80,9 @@ l_value("00")
     m_ButtonBox.pack_start(m_button_strobe, Gtk::PACK_SHRINK);
 	m_button_strobe.signal_clicked().connect( sigc::mem_fun(*this,&ExampleWindow::on_button_clicked_strobe));
 	
-	add(m_Table);
+
+
+    add(m_Table);
 	add(m_VBox);
 	add(m_Frame);
 	add(m_Frame1);
@@ -305,7 +309,9 @@ std::ofstream outfile("program.txt");
 outfile << m_TextView.get_buffer()->get_text();
 outfile.close();
 
-executeFile();
+share_resource.ioMemory[64] = 10;
+
+executeFile( share_resource);
 
 }
 void ExampleWindow::on_notebook_switch_page(Gtk::Widget* /* page */, guint page_num)
@@ -321,7 +327,7 @@ void ExampleWindow::on_entryA_click()
 
         std::string str_vala = std::to_string(int_valueA);
 	
-	std::cout<<str_vala<<std::endl;
+//	std::cout<<str_vala<<std::endl;
 	//valA= static_cast<char>(int_valueA);
 	m_valA.set_text(str_vala);
 	
@@ -335,7 +341,7 @@ void ExampleWindow::on_entryB_click()
 
     std::string str_valb = std::to_string(int_valueB);
 	
-	std::cout<<str_valb<<std::endl;
+//	std::cout<<str_valb<<std::endl;
 	//valA= static_cast<char>(int_valueA);
 	m_valB.set_text(str_valb);
 	
@@ -348,14 +354,11 @@ void ExampleWindow::on_entryC_click()
 
         std::string str_valc = std::to_string(int_valueC);
 	
-	std::cout<<str_valc<<std::endl;
+//	std::cout<<str_valc<<std::endl;
 	//valA= static_cast<char>(int_valueA);
 	m_valC.set_text(str_valc);
 	
 }
-
-
-
 
 void ExampleWindow::on_textbuffer_changed()
 {
@@ -375,4 +378,30 @@ void ExampleWindow::on_spinbutton_digits_changed()
   // std::cout<<m_SpinButtonA.get_value() ;
 }
 
+void ExampleWindow::passed_value(Share_Resource &share_resource)
+{
 
+std::cout<<"A: "<<share_resource.regA<<std::endl;
+std::cout<<"B: "<<share_resource.regB<<std::endl;
+std::cout<<"C: "<<share_resource.regC<<std::endl;
+std::cout<<"D: "<<share_resource.regD<<std::endl;
+std::cout<<"E: "<<share_resource.regE<<std::endl;
+std::cout<<"H: "<<share_resource.regH<<std::endl;
+std::cout<<"L: "<<share_resource.regL<<std::endl;
+std::cout<<"Flag: "<<share_resource.flag<<std::endl;
+
+std::cout<<"Port A: "<<share_resource.ioMemory[64]<<std::endl;
+std::cout<<"Port B: "<<share_resource.ioMemory[65]<<std::endl;
+std::cout<<"Port C: "<<share_resource.ioMemory[66]<<std::endl;
+
+//std::string aaaa ="20";
+//m_valC.set_text(aaaa);
+
+//std::cout<<"i am here"<<std::endl;
+    /*
+        std::cout<<ioMemory[64]<<std::endl;
+        std::cout<<ioMemory[65]<<std::endl;
+        std::cout<<ioMemory[66]<<std::endl;
+        std::cout<<ioMemory[67]<<std::endl;
+  */
+}

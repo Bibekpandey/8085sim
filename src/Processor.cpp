@@ -112,14 +112,17 @@ void Processor::PrintMemory(int a, int b)
     std::cout << std::endl;
 }
 
-void Processor::Run()
+void Processor::Run(Share_Resource &share_resource)
 {
+
+
      char single;
+ 
      std::cout << "single step? (y or n)";
      std::cin >> single;
      if(single=='y')
      {
-         while(Execute())
+         while(Execute(share_resource))
          {
              //std::cout << "want to view memory? ( 'm' if yes, else any char ):  ";
              std::cin.get();
@@ -136,19 +139,29 @@ void Processor::Run()
          }
      }
      else
-         while(Execute());
-             int a[2];
-             std::cout << "enter memory location range(separated by space";
-             std::cin >> a[0] >> a[1];
-             PrintMemory(a[0], a[1]);
-             PrintRegisters();
-             PrintFlags();
+         while(Execute(share_resource));
+          //   int a[2];
+         //    std::cout << "enter memory location range(separated by space";
+         //    std::cin >> a[0] >> a[1];
+         //    PrintMemory(a[0], a[1]);
+          //   PrintRegisters();
+         //    PrintFlags();
 }
 
+void Processor::copyArray(int *mat1, int *mat2)
+{
 
-bool Processor::Execute()
+    for(int i= 0; i<256; i++)
+        mat1[i] = mat2[i];
+}
+
+bool Processor::Execute(Share_Resource &share_resource)
 
 {
+
+
+    copyArray(ioMemory, share_resource.ioMemory);
+
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
     Instruction i = opcodeToInstr[opcode];
@@ -224,8 +237,21 @@ bool Processor::Execute()
      }
 
 //    Share::interrupt = true;
-   
-    return true;
+
+share_resource.regA = psw[0];
+share_resource.flag = psw[1];
+share_resource.regB = bc[0];
+share_resource.regC = bc[1];
+share_resource.regD = de[0];
+share_resource.regE = de[1];
+share_resource.regH = hl[0];
+share_resource.regL = hl[1];
+copyArray(share_resource.ioMemory, ioMemory);
+
+exampleWindow.passed_value(share_resource);
+
+return true;
+
 }
 
 void Processor::Stackpush(int pushvalue)

@@ -2,13 +2,16 @@
 #define GTKMM_EXAMPLEWINDOW_H
 #include <gtkmm.h>
 #include <Helper.h>  
-#include <thread>
+#include <Share.h>
 
 class ExampleWindow : public Gtk::Window 
 {
+
 public:
 	ExampleWindow();
 	virtual ~ExampleWindow();
+
+    void passed_value(Share_Resource &share_resource);
 
 protected:
 	void on_notebook_switch_page(Gtk::Widget* page, guint page_num);
@@ -20,8 +23,10 @@ protected:
     void on_entryA_click();
     void on_entryB_click();
     void on_entryC_click();
-    
-	
+  
+    Share_Resource share_resource;
+ 
+
 /*	enum enumValueFormats
 	  {
     		VALUE_FORMAT_INT,
@@ -32,7 +37,7 @@ protected:
 
 
   
-Gtk::Button m_button;
+    Gtk::Button m_button;
 	Gtk::Button m_button_strobe;
   	Gtk::Table m_Table;
 
@@ -96,4 +101,5 @@ Gtk::Button m_button;
   Glib::RefPtr<Gtk::ListStore> m_refTreeModel1;
 
 };
+
 #endif 

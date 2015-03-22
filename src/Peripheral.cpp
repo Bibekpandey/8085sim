@@ -20,6 +20,8 @@ bool Peripheral::whichMode(int value)
 //transfer value from accumulator to i/o memory
 void Peripheral::updateValues(int address, int regA, int *ioMemory)
 {
+
+
    int type = returnType(address);
 
    switch(type)
@@ -74,7 +76,11 @@ void Peripheral::updateValues(int address, int regA, int *ioMemory)
             //i/o mode
 
             if(regA>>7)
+            {  
+               
                 ioMemory[address] =regA;
+            
+            } 
             else
              //bsr mode
                {
@@ -114,12 +120,17 @@ void Peripheral::insertValues(int address, int &regA, int *ioMemory)
       //port A
       case 0:
           
-         if(whichMode(ioMemory[address+3]))
-         {
+        
+           if(whichMode(ioMemory[address+3]))
+        {
+
 
             if((ioMemory[address+3]>>4 & 1) == 1)
               {
+             
                 regA = ioMemory[address];
+                std::cout<<"PORT A"<<std::endl;
+              
               }
          }
              break;

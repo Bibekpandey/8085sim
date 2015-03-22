@@ -7,6 +7,8 @@
 #include <newParser.h>
 #include <Share.h>
 #include <Peripheral.h>
+#include <exampleWindow.h>
+#include <Share.h>
 
 //typedef std::function<void(Argument, Argument)> func; // argument from Types.h
 
@@ -58,10 +60,14 @@ public:
 
      Peripheral peripheral;
 
-    void Run();
+    ExampleWindow exampleWindow;
+
+    void copyArray(int *mat1, int *mat2);
+   
+    void Run(Share_Resource &share_resource);
     void PrintMemory(int a, int b);
     void Initialize(NewParser*);
-    bool Execute(); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
+    bool Execute(Share_Resource &share_resource); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
 
     void Stackpush(int a); // helper to push to stack
     int Stackpop(); // helper to pop from stack
@@ -385,6 +391,7 @@ private:
         peripheral.updateValues(address,psw[0], ioMemory);
 
         pc+=pc_incr; 
+
     }
 
     // IN **********************
