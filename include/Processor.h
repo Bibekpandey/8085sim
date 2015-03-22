@@ -5,8 +5,9 @@
 #include <Helper.h>
 #include <Types.h>
 #include <newParser.h>
-#include <Peripheral.h>
 #include <Share.h>
+#include <Peripheral.h>
+
 //typedef std::function<void(Argument, Argument)> func; // argument from Types.h
 
 class Signal
@@ -380,11 +381,20 @@ private:
     // OUT *******************
     void out(Argument a, Argument b)
     {
+        int address = Helper::ToDec(a.value);
+        peripheral.updateValues(address,psw[0], ioMemory);
+
+        pc+=pc_incr; 
     }
 
     // IN **********************
     void in(Argument a, Argument b)
     {
+
+        int address= Helper::ToDec(a.value);
+         peripheral.insertValues (address, psw[0], ioMemory);
+
+         pc+=pc_incr;
     }
     
     // ADC ********************

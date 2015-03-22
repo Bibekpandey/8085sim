@@ -1,2 +1,2 @@
-l1: jmp l1
+mvi a,10
 rst5
