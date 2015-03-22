@@ -204,13 +204,14 @@ l_value("00")
 
 /* --------- For Memory tab ----------*/
 
-  for(int i=0; i<30; i++)
+  int start = Helper::ToDec("9000");
+  for(int i=start; i<start+100; i++)
   {
 	  //Fill the TreeView's model
 	  Gtk::TreeModel::Row row = *(m_refTreeModel->append());
-	  row[m_Columns.m_col_address_hex] = 1;
+	  row[m_Columns.m_col_address_hex] = 0;
 	  row[m_Columns.m_col_address] = i;
-	  row[m_Columns.m_col_data] = i;
+	  row[m_Columns.m_col_data] = processor.m_memory[i];
 
  }
 
@@ -274,7 +275,23 @@ void ExampleWindow::threadtest()
 
 void ExampleWindow::on_button_clicked_singlestep()
 {
-    dummy=1;
+    static int parsed = 0;
+    run=0;
+    singlestep=1;
+    if(!parsed)
+    {
+        std::ofstream outfile("program.txt");
+        outfile << m_TextView.get_buffer()->get_text();
+        outfile.close();
+        parser.LoadMnemonics("program.txt", processor.m_memory);
+        processor.Initialize(&parser, this);
+        parsed =1;
+    }
+
+    share_resource.ioMemory[64] = 10;
+
+
+    processor.Run(share_resource);
 }
 
 

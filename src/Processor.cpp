@@ -119,25 +119,54 @@ void Processor::PrintMemory(int a, int b)
 
 void Processor::updateGUI()
 {
-    m_exampleWindow->a_value.set_text(std::to_string(psw[0]));
-    m_exampleWindow->b_value.set_text(std::to_string(bc[0]));
-    m_exampleWindow->c_value.set_text(std::to_string(bc[1]));
-    m_exampleWindow->d_value.set_text(std::to_string(de[0]));
-    m_exampleWindow->e_value.set_text(std::to_string(de[1]));
-    m_exampleWindow->h_value.set_text(std::to_string(hl[0]));
-    m_exampleWindow->l_value.set_text(std::to_string(hl[1]));
-    m_exampleWindow->s_value.set_text(std::to_string(psw[1]&1<<SIGN?1:0));
-    m_exampleWindow->z_value.set_text(std::to_string(psw[1]&1<<ZERO?1:0));
-    m_exampleWindow->ac_value.set_text(std::to_string(psw[1]&1<<AUX_CARRY?1:0));
-    m_exampleWindow->p_value.set_text(std::to_string(psw[1]&1<<PARITY?1:0));
-    m_exampleWindow->cy_value.set_text(std::to_string(psw[1]&1<<CARRY?1:0));
+    // set registers and flags
+    static int a,b,c,d,e,h,l;
+    static int s,z,ac,p,cy;
+    m_exampleWindow->a_value.set_markup(a==psw[0]?std::to_string(psw[0]):("<b>"+std::to_string(psw[0])+"</b>"));
+    m_exampleWindow->b_value.set_markup(b==bc[0]?std::to_string(bc[0]):("<b>"+std::to_string(bc[0])+"</b>"));
+    m_exampleWindow->c_value.set_markup(c==bc[1]?std::to_string(bc[1]):("<b>"+std::to_string(bc[1])+"</b>"));
+    m_exampleWindow->d_value.set_markup(d==de[0]?std::to_string(d):("<b>"+std::to_string(de[0])+"</b>"));
+    m_exampleWindow->e_value.set_markup(e==de[1]?std::to_string(e):("<b>"+std::to_string(de[1])+"</b>"));
+    m_exampleWindow->h_value.set_markup(h==hl[0]?std::to_string(h):("<b>"+std::to_string(hl[0])+"</b>"));
+    m_exampleWindow->l_value.set_markup(l==hl[1]?std::to_string(l):("<b>"+std::to_string(hl[1])+"</b>"));
+    m_exampleWindow->s_value.set_markup(s==(psw[1]&1<<SIGN)?std::to_string(s?1:0) : ("<b>"+std::to_string(psw[1]&1<<SIGN?1:0)+"</b>"));
+    m_exampleWindow->z_value.set_markup(z==(psw[1]&1<<ZERO)?std::to_string(z?1:0) : ("<b>"+std::to_string(psw[1]&1<<ZERO?1:0)+"</b>"));
+    m_exampleWindow->ac_value.set_markup(ac==(psw[1]&1<<AUX_CARRY)?std::to_string(ac?1:0) : ("<b>"+std::to_string(psw[1]&1<<AUX_CARRY?1:0)+"</b>"));
+    m_exampleWindow->p_value.set_markup(p==(psw[1]&1<<PARITY)?std::to_string(p?1:0) : ("<b>"+std::to_string(psw[1]&1<<PARITY?1:0)+"</b>"));
+    m_exampleWindow->cy_value.set_markup(cy==(psw[1]&1<<SIGN)?std::to_string(cy?1:0) : ("<b>"+std::to_string(psw[1]&1<<CARRY?1:0)+"</b>"));
+    a = psw[0],b=bc[0],c=bc[1],d=de[0],e=de[1],h=hl[0],l=hl[1];
+    s=psw[1]&1<<SIGN;
+    z=psw[1]&1<<ZERO;
+    ac=psw[1]&1<<AUX_CARRY;
+    p=psw[1]&1<<PARITY;
+    cy=psw[1]&1<<CARRY;
+    // fill the address
+    Gtk::TreeModel::iterator selrow = m_exampleWindow->m_refTreeModel->children().begin();
+    int memstart = Helper::ToDec("9000");
+    while(selrow!= m_exampleWindow->m_refTreeModel->children().end())
+    {
+        Gtk::ListStore::Row row = *selrow;
+        row[m_exampleWindow->m_Columns.m_col_address_hex] = 0;
+        row[m_exampleWindow->m_Columns.m_col_address] = memstart;
+        row[m_exampleWindow->m_Columns.m_col_data] = m_memory[memstart];
+        memstart++;
+        selrow ++;
+    }
 }
 
 
 void Processor::Run(Share_Resource &share_resource)
 {
-     while(Execute(share_resource));
-     updateGUI();
+     if(m_exampleWindow->run==1)
+     {
+        while(Execute(share_resource));
+        updateGUI();
+     }
+     else // meaning singlestep on
+     {
+         Execute(share_resource);
+         updateGUI();
+     }
      return;
 
      char single;

@@ -1,4 +1,5 @@
-mvi a, aah
-mvi b, 0bh
-add b
+mvi a, 33h
+mvi b, afh
+add a
+xra a
 rst5
