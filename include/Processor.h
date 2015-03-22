@@ -84,6 +84,7 @@ public:
         "    L: " << hl[1]<<
         "    SP lsb: " << sp[0]<<
         "    SP msb: " << sp[1]<< "    PC: "<<pc<<std::endl<<std::endl;
+        PrintFlags();
     }
 
     // memory

@@ -123,8 +123,10 @@ void Processor::Initialize(NewParser*p)
 
 void Processor::PrintMemory(int a, int b)
 {
-    for(int i=0;i<b-a+1;i++)
+    for(int i=0;i<b-a+1;i++){
         std::cout << a+i << ": " << m_memory[a+i] << "   ";
+        if(i%9==8)std::cout <<'\n';
+    }
     std::cout << std::endl;
 }
 
@@ -163,6 +165,8 @@ void Processor::Run()
              PrintFlags();
              */
     while(Execute());
+    PrintMemory(36864, 36964);
+    PrintRegisters();
 }
 
 

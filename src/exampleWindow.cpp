@@ -240,6 +240,7 @@ void ExampleWindow::on_button_clicked()
 //outfile << m_TextView.get_buffer()->get_text();
 
 //outfile.close();
+
 executeFile();
 
 }

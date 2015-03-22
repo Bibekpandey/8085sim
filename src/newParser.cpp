@@ -293,7 +293,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 				switch(m_instructions[n].arg1.type)
 				{
 					case BYTE:
-                        Helper::RTrim(args[0]);
+                        Helper::RTrim(args[0],'H');
 						if((Helper::IsHexStr(args[0]) and args[0].length()==2))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);
@@ -338,7 +338,7 @@ std::vector<int> NewParser::GetOpcodeAndValues(std::string cmmd, std::vector<std
 							errors+=1;
 						break;
 					case DOUBLE:
-                        Helper::RTrim(args[1]);
+                        Helper::RTrim(args[1],'H');
 						if((Helper::IsHexStr(args[1]) and args[1].length()==4))
 						{
 							opcodeAndArgs.push_back(m_opcodes[n]);

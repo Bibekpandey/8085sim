@@ -1,4 +1,5 @@
-main: lxi h, 9000
-call solve
+mvi a, 00h
+mvi c, 02h
+cmp c
 rst5
 
