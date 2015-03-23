@@ -13,8 +13,7 @@ public:
 	ExampleWindow();
 	virtual ~ExampleWindow();
 
-    void passed_value(Share_Resource &share_resource);
-
+    Share_Resource share_resource;
 protected:
 	void on_notebook_switch_page(Gtk::Widget* page, guint page_num);
 	void on_textbuffer_changed();
@@ -28,7 +27,6 @@ protected:
     void on_entryC_click();
     void threadtest();
   
-    Share_Resource share_resource;
  
 
 /*	enum enumValueFormats

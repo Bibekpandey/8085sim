@@ -120,7 +120,6 @@ void Peripheral::insertValues(int address, int &regA, int *ioMemory)
       //port A
       case 0:
           
-        
            if(whichMode(ioMemory[address+3]))
         {
 
@@ -129,7 +128,6 @@ void Peripheral::insertValues(int address, int &regA, int *ioMemory)
               {
              
                 regA = ioMemory[address];
-                std::cout<<"PORT A"<<std::endl;
               
               }
          }

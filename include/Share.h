@@ -15,7 +15,8 @@ class Share_Resource
   int regE;
   int regH;
   int regL;
-  bool interrupt;
+  bool strobeA;
+  bool strobeB;
 
   Share_Resource()
   {
@@ -32,6 +33,10 @@ class Share_Resource
     regE = 0;
     regH = 0;
     regL = 0;
+  
+  strobeA = false;
+  strobeB = false;
+
   }
 
 };

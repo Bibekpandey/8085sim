@@ -1,5 +1,2 @@
-mvi a, 33h
-mvi b, afh
-add a
-xra a
+l1:jmp l1
 rst5

@@ -64,10 +64,10 @@ public:
 
     void copyArray(int *mat1, int *mat2);
    
-    void Run(Share_Resource &share_resource);
+    void Run();
     void PrintMemory(int a, int b);
     void Initialize(NewParser*, ExampleWindow*);
-    bool Execute(Share_Resource &share_resource); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
+    bool Execute(); // executes the instruction pointed by the PC, returns true if further execution, else false if rst5 encountered
     void updateGUI();
     void Stackpush(int a); // helper to push to stack
     int Stackpop(); // helper to pop from stack

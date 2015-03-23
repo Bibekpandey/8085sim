@@ -270,7 +270,7 @@ void ExampleWindow::threadtest()
     while(run!=1);
     run=0;
     //executeFile(this, share_resource);
-    processor.Run(share_resource);
+    processor.Run();
 }
 
 void ExampleWindow::on_button_clicked_singlestep()
@@ -288,10 +288,10 @@ void ExampleWindow::on_button_clicked_singlestep()
         parsed =1;
     }
 
-    share_resource.ioMemory[64] = 10;
+  //  share_resource.ioMemory[64] = 10;
 
 
-    processor.Run(share_resource);
+    processor.Run();
 }
 
 
@@ -358,7 +358,7 @@ std::ofstream outfile("program.txt");
 outfile << m_TextView.get_buffer()->get_text();
 outfile.close();
 
-share_resource.ioMemory[64] = 10;
+//share_resource.ioMemory[64] = 10;
 
 parser.LoadMnemonics("program.txt", processor.m_memory);
 processor.Initialize(&parser, this);
@@ -378,7 +378,8 @@ void ExampleWindow::on_entryA_click()
 {
 	//std::cout<<"MAnil";	
  	int int_valueA=m_SpinButtonA.get_value() ;
-	
+ 
+    share_resource.ioMemory[64] = int_valueA;
 
         std::string str_vala = std::to_string(int_valueA);
 	
@@ -394,6 +395,8 @@ void ExampleWindow::on_entryB_click()
     
     int int_valueB=m_SpinButtonB.get_value() ;
 
+    share_resource.ioMemory[65] = int_valueB;
+    
     std::string str_valb = std::to_string(int_valueB);
 	
 //	std::cout<<str_valb<<std::endl;
@@ -407,7 +410,9 @@ void ExampleWindow::on_entryC_click()
  	int int_valueC=m_SpinButtonC.get_value() ;
 	
 
-        std::string str_valc = std::to_string(int_valueC);
+    share_resource.ioMemory[66] = int_valueC;
+    
+    std::string str_valc = std::to_string(int_valueC);
 	
 //	std::cout<<str_valc<<std::endl;
 	//valA= static_cast<char>(int_valueA);
@@ -424,7 +429,8 @@ void ExampleWindow::on_textbuffer_changed()
 
 void ExampleWindow::on_button_clicked_strobe()
 {
-   
+  
+        share_resource.strobeA = true;
         std::cout<<"button is clicked"<<std::endl;
 }
 
@@ -433,30 +439,3 @@ void ExampleWindow::on_spinbutton_digits_changed()
   // std::cout<<m_SpinButtonA.get_value() ;
 }
 
-void ExampleWindow::passed_value(Share_Resource &share_resource)
-{
-
-std::cout<<"A: "<<share_resource.regA<<std::endl;
-std::cout<<"B: "<<share_resource.regB<<std::endl;
-std::cout<<"C: "<<share_resource.regC<<std::endl;
-std::cout<<"D: "<<share_resource.regD<<std::endl;
-std::cout<<"E: "<<share_resource.regE<<std::endl;
-std::cout<<"H: "<<share_resource.regH<<std::endl;
-std::cout<<"L: "<<share_resource.regL<<std::endl;
-std::cout<<"Flag: "<<share_resource.flag<<std::endl;
-
-std::cout<<"Port A: "<<share_resource.ioMemory[64]<<std::endl;
-std::cout<<"Port B: "<<share_resource.ioMemory[65]<<std::endl;
-std::cout<<"Port C: "<<share_resource.ioMemory[66]<<std::endl;
-
-//std::string aaaa ="20";
-//m_valC.set_text(aaaa);
-
-//std::cout<<"i am here"<<std::endl;
-    /*
-        std::cout<<ioMemory[64]<<std::endl;
-        std::cout<<ioMemory[65]<<std::endl;
-        std::cout<<ioMemory[66]<<std::endl;
-        std::cout<<ioMemory[67]<<std::endl;
-  */
-}

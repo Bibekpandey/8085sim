@@ -122,6 +122,8 @@ void Processor::updateGUI()
     // set registers and flags
     static int a,b,c,d,e,h,l;
     static int s,z,ac,p,cy;
+    static int portA, portB, portC;
+
     m_exampleWindow->a_value.set_markup(a==psw[0]?std::to_string(psw[0]):("<b>"+std::to_string(psw[0])+"</b>"));
     m_exampleWindow->b_value.set_markup(b==bc[0]?std::to_string(bc[0]):("<b>"+std::to_string(bc[0])+"</b>"));
     m_exampleWindow->c_value.set_markup(c==bc[1]?std::to_string(bc[1]):("<b>"+std::to_string(bc[1])+"</b>"));
@@ -134,8 +136,13 @@ void Processor::updateGUI()
     m_exampleWindow->ac_value.set_markup(ac==(psw[1]&1<<AUX_CARRY)?std::to_string(ac?1:0) : ("<b>"+std::to_string(psw[1]&1<<AUX_CARRY?1:0)+"</b>"));
     m_exampleWindow->p_value.set_markup(p==(psw[1]&1<<PARITY)?std::to_string(p?1:0) : ("<b>"+std::to_string(psw[1]&1<<PARITY?1:0)+"</b>"));
     m_exampleWindow->cy_value.set_markup(cy==(psw[1]&1<<SIGN)?std::to_string(cy?1:0) : ("<b>"+std::to_string(psw[1]&1<<CARRY?1:0)+"</b>"));
+
+    m_exampleWindow->m_valA.set_markup(std::to_string(ioMemory[64]));
+    m_exampleWindow->m_valB.set_markup(std::to_string(ioMemory[65]));
+    m_exampleWindow->m_valC.set_markup(std::to_string(ioMemory[66]));
+ 
     a = psw[0],b=bc[0],c=bc[1],d=de[0],e=de[1],h=hl[0],l=hl[1];
-    s=psw[1]&1<<SIGN;
+    
     z=psw[1]&1<<ZERO;
     ac=psw[1]&1<<AUX_CARRY;
     p=psw[1]&1<<PARITY;
@@ -155,16 +162,18 @@ void Processor::updateGUI()
 }
 
 
-void Processor::Run(Share_Resource &share_resource)
+void Processor::Run()
 {
-     if(m_exampleWindow->run==1)
+    
+
+  if(m_exampleWindow->run==1)
      {
-        while(Execute(share_resource));
+        while(Execute());
         updateGUI();
      }
      else // meaning singlestep on
      {
-         Execute(share_resource);
+         Execute();
          updateGUI();
      }
      return;
@@ -175,7 +184,7 @@ void Processor::Run(Share_Resource &share_resource)
      std::cin >> single;
      if(single=='y')
      {
-         while(Execute(share_resource))
+         while(Execute())
          {
              //std::cout << "want to view memory? ( 'm' if yes, else any char ):  ";
              std::cin.get();
@@ -192,7 +201,7 @@ void Processor::Run(Share_Resource &share_resource)
          }
      }
      else
-         while(Execute(share_resource));
+         while(Execute());
           //   int a[2];
          //    std::cout << "enter memory location range(separated by space";
          //    std::cin >> a[0] >> a[1];
@@ -208,10 +217,11 @@ void Processor::copyArray(int *mat1, int *mat2)
         mat1[i] = mat2[i];
 }
 
-bool Processor::Execute(Share_Resource &share_resource)
+bool Processor::Execute()
 
 {
-    copyArray(ioMemory, share_resource.ioMemory);
+    copyArray(ioMemory, m_exampleWindow->share_resource.ioMemory);
+
 
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
@@ -259,6 +269,11 @@ bool Processor::Execute(Share_Resource &share_resource)
     std::cout << "executing instruction: " << i.command << " "<<i.arg1.value<<" "<<i.arg2.value<< std::endl;
   
     (this->*it->second)(i.arg1, i.arg2);
+    
+    std::cout << m_exampleWindow->share_resource.strobeA;
+ if(m_exampleWindow->share_resource.strobeA)
+        std::cout<<"I am strobe"<<std::endl;
+
 
 //check for the interrupt and status value
    if(pin.interruptEnableFlipFlop)
@@ -287,19 +302,7 @@ bool Processor::Execute(Share_Resource &share_resource)
            }
      }
 
-//    Share::interrupt = true;
-
-share_resource.regA = psw[0];
-share_resource.flag = psw[1];
-share_resource.regB = bc[0];
-share_resource.regC = bc[1];
-share_resource.regD = de[0];
-share_resource.regE = de[1];
-share_resource.regH = hl[0];
-share_resource.regL = hl[1];
-copyArray(share_resource.ioMemory, ioMemory);
-
-m_exampleWindow->passed_value(share_resource);
+copyArray(m_exampleWindow->share_resource.ioMemory, ioMemory);
 
 return true;
 
