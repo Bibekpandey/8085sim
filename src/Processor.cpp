@@ -1,5 +1,7 @@
 #include <Processor.h>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 Processor::Processor()
 {
@@ -8,9 +10,25 @@ Processor::Processor()
     pc = 0;
     // our memory has locations upto 1<<16 = 65535
     // so initialize sp to value 65535
+
     sp[0] = 65535%256;
     sp[1] = 65535/256;
-   
+    
+    std::ifstream vector_table("vectortable.txt");
+  
+    std::string temp;
+
+    int a, b;
+    
+    while(!vector_table.eof())
+    {
+  
+    vector_table>> a >> b;
+    m_memory.SetValue(a, b); 
+    
+    }
+    
+
 }
 
 void Processor::Initialize(NewParser*p, ExampleWindow * window)
@@ -218,10 +236,9 @@ void Processor::copyArray(int *mat1, int *mat2)
 }
 
 bool Processor::Execute()
-
 {
-    copyArray(ioMemory, m_exampleWindow->share_resource.ioMemory);
 
+    copyArray(ioMemory, m_exampleWindow->share_resource.ioMemory);
 
     int opcode = m_memory[pc];
     //std::cout << pc << " " << opcode << " ";
@@ -270,37 +287,85 @@ bool Processor::Execute()
   
     (this->*it->second)(i.arg1, i.arg2);
     
-    std::cout << m_exampleWindow->share_resource.strobeA;
- if(m_exampleWindow->share_resource.strobeA)
-        std::cout<<"I am strobe"<<std::endl;
-
-
 //check for the interrupt and status value
    if(pin.interruptEnableFlipFlop)
      {
-        if(pin.TRAP.status && pin.TRAP.value)
+        if(pin.TRAP.status )
           { 
-          std::cout<<"Trap"<<std::endl;
-          std::cout<<pin.TRAP.value<<std::endl; 
+
+   if(m_exampleWindow->share_resource.strobeA)
+             
+           pin.TRAP.value =  m_exampleWindow->share_resource.strobeA;
+
+   if(m_exampleWindow->share_resource.strobeB)
+             
+           pin.TRAP.value =   m_exampleWindow->share_resource.strobeB;
+         
           }
 
-        else if(pin.RST_7_5.status && pin.RST_7_5.value)
+        else if(pin.RST_7_5.status )
             {
-             std::cout<<"RST 7.5"<<std::endl;
-             std::cout<<pin.RST_7_5.value<<std::endl; 
+   
+
+    if(m_exampleWindow->share_resource.strobeA)
+             pin.RST_7_5.value =   m_exampleWindow->share_resource.strobeA;
+
+   if(m_exampleWindow->share_resource.strobeB)
+             pin.RST_7_5.value =   m_exampleWindow->share_resource.strobeB;
+        
             }
 
-        else if(pin.RST_6_5.status && pin.RST_6_5.value)
+        else if(pin.RST_6_5.status) 
            { 
-            std::cout<<"RST 6.5" <<std::endl;
-            std::cout<<pin.RST_6_5.value<<std::endl; 
+    if(m_exampleWindow->share_resource.strobeA)
+             pin.RST_6_5.value =   m_exampleWindow->share_resource.strobeA;
+
+   if(m_exampleWindow->share_resource.strobeB)
+             pin.RST_6_5.value =   m_exampleWindow->share_resource.strobeB;
+                   
            }
-        else if(pin.RST_5_5.status && pin.RST_5_5.value)
+        else if(pin.RST_5_5.status) 
            {
-            std::cout<<"RST 5.5"<<std::endl;
-            std::cout<<pin.RST_5_5.value<<std::endl; 
+         
+    if(m_exampleWindow->share_resource.strobeA)
+             pin.RST_5_5.value =   m_exampleWindow->share_resource.strobeA;
+
+   if(m_exampleWindow->share_resource.strobeB)
+             pin.RST_5_5.value =  m_exampleWindow-> share_resource.strobeB;
+                   
            }
      }
+
+    if(pin.TRAP.value)
+        {
+            //it has no vector table
+        }
+
+    else if(pin.RST_7_5.value)
+      {
+           Stackpush(pc+pc_incr);
+           pc=36793;
+      }
+
+    else if(pin.RST_6_5.value)
+      {
+           Stackpush(pc+pc_incr);
+           pc=36790;
+      }
+     
+    else if(pin.RST_5_5.value)
+     {
+           Stackpush(pc);
+           pc=36787;
+     }
+
+m_exampleWindow->share_resource.strobeA = false;
+m_exampleWindow->share_resource.strobeB = false;
+
+pin.TRAP.value = false;
+pin.RST_7_5.value = false;
+pin.RST_6_5.value = false;
+pin.RST_5_5.value = false;
 
 copyArray(m_exampleWindow->share_resource.ioMemory, ioMemory);
 
@@ -401,4 +466,3 @@ void Processor::SetCarry(int reg)
         else
             psw[1] &= (~(1<<CARRY)&0xff);
 }
-

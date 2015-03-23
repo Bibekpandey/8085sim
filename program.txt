@@ -1,2 +1,5 @@
-l1:jmp l1
+mvi a, 0e
+sim 
+ei
+ l1:jmp l1
 rst5

@@ -83,7 +83,7 @@ l_value("00")
 	m_VBox_run.pack_start(m_ButtonBox, Gtk::PACK_SHRINK);
 		m_ButtonBox.pack_start(m_button, Gtk::PACK_SHRINK);
 	m_button.signal_clicked().connect( sigc::mem_fun(*this,
-&ExampleWindow::on_button_clicked) );
+   &ExampleWindow::on_button_clicked) );
 
     m_VBox_singlestep.pack_start(m_button_box_singlestep, Gtk::PACK_SHRINK);
     m_button_box_singlestep.pack_start(m_button_singlestep, Gtk::PACK_SHRINK);
@@ -93,8 +93,13 @@ l_value("00")
     m_ButtonBox.pack_start(m_button_strobe, Gtk::PACK_SHRINK);
 	m_button_strobe.signal_clicked().connect( sigc::mem_fun(*this,&ExampleWindow::on_button_clicked_strobe));
 	
-
-
+   //strobe function
+    strobeA.signal_clicked().connect(sigc::mem_fun(*this,
+    &ExampleWindow::clickStrobeA));
+    
+    strobeB.signal_clicked().connect(sigc::mem_fun(*this,
+    &ExampleWindow::clickStrobeB));
+    
     add(m_Table);
 	add(m_VBox);
     add(m_VBox_singlestep);
@@ -167,7 +172,7 @@ l_value("00")
 	m_Table.attach(m_Frame, 4,5,1,4);
 	m_Table.attach(m_Frame1, 3,4,1,4);
 	m_Table.attach(m_Frame2, 3,6,4,7);
-	m_Table.attach(m_TextView, 0,3,1,6);
+	m_Table.attach(m_ScrolledWindow, 0,3,1,6);
 
 	updateflag_register();
 	m_VBox.pack_start(m_Notebook);
@@ -268,11 +273,10 @@ for(guint i = 0; i < 2; i++)
 void ExampleWindow::threadtest()
 {
     while(run!=1);
-    run=0;
     //executeFile(this, share_resource);
     processor.Run();
+    run=0;
 }
-
 void ExampleWindow::on_button_clicked_singlestep()
 {
     static int parsed = 0;
@@ -293,11 +297,24 @@ void ExampleWindow::on_button_clicked_singlestep()
 
     processor.Run();
 }
+void ExampleWindow::clickStrobeA()
+{
 
+        share_resource.strobeA = true;
 
+}
+
+void ExampleWindow::clickStrobeB()
+{
+
+        share_resource.strobeB = true;
+}
+ 
 ExampleWindow::~ExampleWindow()
 {
+
 }
+
 void ExampleWindow::updateflag_register()
 {
 	/*------- FIll Flag-------*/
@@ -430,7 +447,6 @@ void ExampleWindow::on_textbuffer_changed()
 void ExampleWindow::on_button_clicked_strobe()
 {
   
-        share_resource.strobeA = true;
         std::cout<<"button is clicked"<<std::endl;
 }
 

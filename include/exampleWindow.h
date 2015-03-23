@@ -26,9 +26,9 @@ protected:
     void on_entryB_click();
     void on_entryC_click();
     void threadtest();
-  
+    void clickStrobeA();
+    void clickStrobeB(); 
  
-
 /*	enum enumValueFormats
 	  {
     		VALUE_FORMAT_INT,
@@ -66,7 +66,7 @@ protected:
   Glib::RefPtr<Gtk::Adjustment> m_adjustment_A, m_adjustment_B,m_adjustment_C;
   Gtk::Label m_labelA, m_labelB, m_labelC, m_valA, m_valB, m_valC, m_label_ShowValue;
   Gtk::ButtonBox button_boxA, button_boxB, button_boxC, button_box_strobeA, button_box_strobeB;
- Gtk::SpinButton m_SpinButtonA, m_SpinButtonB, m_SpinButtonC;
+  Gtk::SpinButton m_SpinButtonA, m_SpinButtonB, m_SpinButtonC;
   
 
 	Gtk::Notebook m_Notebook;

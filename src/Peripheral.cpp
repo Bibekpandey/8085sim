@@ -96,7 +96,10 @@ void Peripheral::updateValues(int address, int regA, int *ioMemory)
                      ioMemory[address-1] |= 1<<getalue;
                  else
                      ioMemory[address-1] &= ~(1<<getalue);
-
+ 
+     //              handshaking.INTEa = ioMemory[address]>>4;
+     //             handshaking.INTEb = ioMemory[address]>>2;
+                  
                }
            
             break;
